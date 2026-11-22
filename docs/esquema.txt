@@ -1,0 +1,30 @@
+ESQUEMA RELACIONAL (NOTACAO CONCEITUAL / LOGICA)
+
+USUARIO (id_usuario, nome, email, cargo, departamento)
+    PK: id_usuario
+
+AVALIACAO (id_avaliacao, titulo, descricao, data_inicio, data_fim)
+    PK: id_avaliacao
+
+QUESTAO (id_questao, enunciado, tipo_questao)
+    PK: id_questao
+
+ALTERNATIVA (id_questao, id_alternativa, texto)
+    PK: (id_questao, id_alternativa)
+    FK: id_questao REFERENCIA QUESTAO (id_questao)
+
+COMPOSICAO (id_avaliacao, id_questao)
+    PK: (id_avaliacao, id_questao)
+    FK: id_avaliacao REFERENCIA AVALIACAO (id_avaliacao)
+    FK: id_questao REFERENCIA QUESTAO (id_questao)
+
+DESIGNACAO (id_designacao, id_avaliacao, id_avaliador, id_avaliado)
+    PK: id_designacao
+    FK: id_avaliacao REFERENCIA AVALIACAO (id_avaliacao)
+    FK: id_avaliador REFERENCIA USUARIO (id_usuario)
+    FK: id_avaliado REFERENCIA USUARIO (id_usuario)
+
+RESPOSTA (id_resposta, id_designacao, id_questao, valor_resposta)
+    PK: id_resposta
+    FK: id_designacao REFERENCIA DESIGNACAO (id_designacao)
+    FK: id_questao REFERENCIA QUESTAO (id_questao)
