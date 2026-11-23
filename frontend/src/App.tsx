@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Header, type TabType } from './components/Header';
+import { QuestoesManager } from './components/QuestoesManager';
+import { UsuariosManager } from './components/UsuariosManager';
 import type { Usuario } from './types';
 import {
   FileText,
@@ -15,11 +17,17 @@ import {
 export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
+  const [userRefreshKey, setUserRefreshKey] = useState(0);
+
+  const handleRefreshUsuarios = useCallback(() => {
+    setUserRefreshKey((prev) => prev + 1);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-[#000020]">
       {/* Topbar com navegação por abas e seletor rápido de perfil */}
       <Header
+        key={userRefreshKey}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         currentUser={currentUser}
@@ -28,7 +36,7 @@ export function App() {
 
       {/* Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Banner de Boas-Vindas e Contexto do Ciclo 360° */}
+        {/* Banner de Boas-Vindas */}
         <div
           className="rounded-2xl p-6 mb-8 text-white shadow-xl relative overflow-hidden"
           style={{
@@ -50,7 +58,7 @@ export function App() {
             </h1>
             <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-4">
               Sistema com banco de dados PostgreSQL, back-end em Java/Spring Boot com JDBC puro (DAO),
-              e front-end moderno em React com suporte aos 5 relatórios analíticos, pesos ponderados por competência e particularidade de avaliação 360°.
+              e front-end em React com suporte aos 5 relatórios analíticos, pesos ponderados por competência e particularidade de avaliação 360°.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -61,6 +69,14 @@ export function App() {
               >
                 <span>Responder Avaliações</span>
                 <ArrowRight size={16} />
+              </button>
+
+              <button
+                onClick={() => setActiveTab('questoes')}
+                className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold text-white border border-[#ffcc50]/40 hover:bg-white/10 transition cursor-pointer"
+              >
+                <FileText size={16} className="text-[#ffcc50]" />
+                <span>Gerenciar Questões (RF1)</span>
               </button>
 
               <button
@@ -171,52 +187,59 @@ export function App() {
               </div>
             </div>
 
-            {/* Status da Fase 1 */}
+            {/* Status da Fase 2 */}
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <CheckCircle size={22} className="text-emerald-500" />
                 <div>
                   <h2 className="text-base font-bold text-[#171a4a]">
-                    Fase 1 Concluída: Base, Layout & Identidade Visual
+                    Fase 2 Concluída: Módulo de Questões (RF1) & Gestão de Colaboradores
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Paleta de cores (#ffcc50, #ff9800, #2f2c79, #171a4a, #000020), Vite + React + TS,
-                    Tailwind v4, Tipos e cliente de API prontos para o commit.
+                    Cadastros com formulários dinâmicos, escalas automáticas e listagens integradas à API.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
-                  Próximas Fases Planejadas para Commits Individuais:
-                </h4>
-                <ol className="list-decimal list-inside text-xs text-slate-700 space-y-1.5 font-medium">
-                  <li>
-                    <span className="font-bold text-[#2f2c79]">Fase 2:</span> Módulo de Questões (RF1) e Cadastro de Usuários/Colaboradores.
-                  </li>
-                  <li>
-                    <span className="font-bold text-[#2f2c79]">Fase 3:</span> Módulo de Avaliações e Composição com Pesos Ponderados (RF2, RF3, RF6).
-                  </li>
-                  <li>
-                    <span className="font-bold text-[#2f2c79]">Fase 4:</span> Módulo de Designações 360° (RF4).
-                  </li>
-                  <li>
-                    <span className="font-bold text-[#2f2c79]">Fase 5:</span> Módulo do Colaborador: Preenchimento de Questionários 360° (RF5).
-                  </li>
-                  <li>
-                    <span className="font-bold text-[#2f2c79]">Fase 6:</span> Módulo dos 5 Relatórios Analíticos com Tabelas e Gráficos Chart.js (RF7).
-                  </li>
-                  <li>
-                    <span className="font-bold text-[#2f2c79]">Fase 7:</span> Dashboard com KPIs agregados e testes finais.
-                  </li>
-                </ol>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div
+                  onClick={() => setActiveTab('questoes')}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
+                >
+                  <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
+                    Abrir Módulo de Questões (RF1) →
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Visualize questões de múltipla escolha com alternativas e questões abertas de texto livre.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab('usuarios')}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
+                >
+                  <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
+                    Abrir Gestão de Colaboradores →
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Gerencie usuários, departamentos e cargos cadastrados na base do PostgreSQL.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Placeholder para abas que serão conectadas nas próximas fases */}
-        {activeTab !== 'dashboard' && (
+        {/* Aba de Questões (RF1) */}
+        {activeTab === 'questoes' && <QuestoesManager />}
+
+        {/* Aba de Usuários / Colaboradores */}
+        {activeTab === 'usuarios' && (
+          <UsuariosManager onRefreshUsuarios={handleRefreshUsuarios} />
+        )}
+
+        {/* Placeholder para abas das próximas fases */}
+        {activeTab !== 'dashboard' && activeTab !== 'questoes' && activeTab !== 'usuarios' && (
           <div className="bg-white rounded-xl p-12 border border-slate-200 text-center shadow-sm">
             <div
               className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white mb-4 shadow-lg"
@@ -228,11 +251,11 @@ export function App() {
               Aba Selecionada: {activeTab.toUpperCase()}
             </h2>
             <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-              Esta seção será implementada na respectiva fase incremental, pronta para ser commitada separadamente no seu repositório Git.
+              Esta seção será conectada nas próximas etapas incrementais, permitindo testes e commits individuais.
             </p>
             <button
               onClick={() => setActiveTab('dashboard')}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#000020] transition"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-[#000020] transition cursor-pointer"
               style={{ backgroundColor: '#ff9800' }}
             >
               Voltar ao Dashboard
