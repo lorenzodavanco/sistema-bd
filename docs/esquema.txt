@@ -13,7 +13,7 @@ ALTERNATIVA (id_questao, id_alternativa, texto)
     PK: (id_questao, id_alternativa)
     FK: id_questao REFERENCIA QUESTAO (id_questao)
 
-COMPOSICAO (id_avaliacao, id_questao)
+COMPOSICAO (id_avaliacao, id_questao, peso)
     PK: (id_avaliacao, id_questao)
     FK: id_avaliacao REFERENCIA AVALIACAO (id_avaliacao)
     FK: id_questao REFERENCIA QUESTAO (id_questao)
@@ -28,3 +28,29 @@ RESPOSTA (id_resposta, id_designacao, id_questao, valor_resposta)
     PK: id_resposta
     FK: id_designacao REFERENCIA DESIGNACAO (id_designacao)
     FK: id_questao REFERENCIA QUESTAO (id_questao)
+
+
+JUSTIFICATIVA DA TERCEIRA FORMA NORMAL (3FN)
+
+O modelo relacional do Sistema de Avaliação 360° encontra-se rigorosamente na 3FN:
+
+1. Primeira Forma Normal (1FN):
+   - Todos os atributos são atômicos e contêm apenas valores escalares indivisíveis.
+   - Não há atributos multivalorados nem grupos repetidores em nenhuma das tabelas.
+
+2. Segunda Forma Normal (2FN):
+   - O esquema atende integralmente à 1FN.
+   - Todas as tabelas com chaves primárias compostas (ALTERNATIVA e COMPOSICAO) possuem seus
+     atributos não-chave (texto em ALTERNATIVA; peso em COMPOSICAO) dependentes da totalidade
+     da chave primária, e não de parte dela (inexistência de dependência funcional parcial).
+   - Nas demais tabelas (USUARIO, AVALIACAO, QUESTAO, DESIGNACAO, RESPOSTA), a chave primária
+     é simples (coluna única gerada por SERIAL), satisfazendo a 2FN por definição.
+
+3. Terceira Forma Normal (3FN):
+   - O esquema atende integralmente à 2FN.
+   - Não existem dependências funcionais transitivas entre atributos não-chave.
+   - Em todas as tabelas, cada atributo não-chave depende exclusivamente e diretamente da chave
+     primária da sua respectiva tabela (depende da chave, de toda a chave e de nada além da chave).
+   - Não há armazenamento de dados derivados ou calculados (como médias ponderadas de avaliações
+     ou contagens de respostas), que são sempre calculados dinamicamente via consultas SQL na
+     camada de relatórios.

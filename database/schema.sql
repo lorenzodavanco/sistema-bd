@@ -31,6 +31,7 @@ CREATE TABLE ALTERNATIVA (
 CREATE TABLE COMPOSICAO (
     id_avaliacao INT NOT NULL,
     id_questao INT NOT NULL,
+    peso NUMERIC(5,2) NOT NULL DEFAULT 1.00,
     PRIMARY KEY (id_avaliacao, id_questao),
     FOREIGN KEY (id_avaliacao) REFERENCES AVALIACAO (id_avaliacao) ON DELETE CASCADE,
     FOREIGN KEY (id_questao) REFERENCES QUESTAO (id_questao) ON DELETE CASCADE
