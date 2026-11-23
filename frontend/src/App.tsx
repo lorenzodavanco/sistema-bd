@@ -1,0 +1,254 @@
+import { useState } from 'react';
+import { Header, type TabType } from './components/Header';
+import type { Usuario } from './types';
+import {
+  FileText,
+  Layers,
+  Sparkles,
+  ArrowRight,
+  Database,
+  BarChart,
+  UserCheck,
+  CheckCircle,
+} from 'lucide-react';
+
+export function App() {
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50 text-[#000020]">
+      {/* Topbar com navegação por abas e seletor rápido de perfil */}
+      <Header
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        currentUser={currentUser}
+        onSelectUser={setCurrentUser}
+      />
+
+      {/* Conteúdo Principal */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Banner de Boas-Vindas e Contexto do Ciclo 360° */}
+        <div
+          className="rounded-2xl p-6 mb-8 text-white shadow-xl relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, #171a4a 0%, #2f2c79 65%, #000020 100%)',
+          }}
+        >
+          <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 pointer-events-none flex items-center justify-end pr-8">
+            <Database size={240} />
+          </div>
+
+          <div className="relative z-10 max-w-3xl">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold mb-3 border border-[#ff9800]/40 bg-[#ff9800]/20 text-[#ffcc50]">
+              <Sparkles size={14} className="text-[#ff9800]" />
+              <span>Avaliação de Desempenho 360° • UEL Banco de Dados I</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
+              Olá{currentUser ? `, ${currentUser.nome.split(' ')[0]}` : ''}!
+            </h1>
+            <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-4">
+              Sistema com banco de dados PostgreSQL, back-end em Java/Spring Boot com JDBC puro (DAO),
+              e front-end moderno em React com suporte aos 5 relatórios analíticos, pesos ponderados por competência e particularidade de avaliação 360°.
+            </p>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setActiveTab('minhas-avaliacoes')}
+                className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold text-[#000020] shadow-md transition transform hover:-translate-y-0.5 cursor-pointer"
+                style={{ backgroundColor: '#ff9800' }}
+              >
+                <span>Responder Avaliações</span>
+                <ArrowRight size={16} />
+              </button>
+
+              <button
+                onClick={() => setActiveTab('relatorios')}
+                className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold text-white border border-[#ffcc50]/40 hover:bg-white/10 transition cursor-pointer"
+              >
+                <BarChart size={16} className="text-[#ffcc50]" />
+                <span>Ver 5 Relatórios SQL</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Visualização por Aba */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div
+                onClick={() => setActiveTab('questoes')}
+                className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    RF1 • Questões
+                  </span>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                    style={{ backgroundColor: '#2f2c79' }}
+                  >
+                    <FileText size={20} />
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold group-hover:text-[#ff9800] transition">
+                  Banco de Questões
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Múltipla escolha e texto livre para competências.
+                </p>
+              </div>
+
+              <div
+                onClick={() => setActiveTab('avaliacoes')}
+                className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    RF2 & RF3 • Ciclos
+                  </span>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                    style={{ backgroundColor: '#ff9800' }}
+                  >
+                    <Layers size={20} />
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold group-hover:text-[#ff9800] transition">
+                  Ciclos & Pesos (RF6)
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Composição de critérios com ponderação estratégica.
+                </p>
+              </div>
+
+              <div
+                onClick={() => setActiveTab('designacoes')}
+                className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    RF4 • Atribuições
+                  </span>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-[#000020]"
+                    style={{ backgroundColor: '#ffcc50' }}
+                  >
+                    <UserCheck size={20} />
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold group-hover:text-[#ff9800] transition">
+                  Designações 360°
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Matriz de quem avalia quem no ciclo.
+                </p>
+              </div>
+
+              <div
+                onClick={() => setActiveTab('relatorios')}
+                className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    RF7 • Analytics
+                  </span>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                    style={{ backgroundColor: '#171a4a' }}
+                  >
+                    <BarChart size={20} />
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold group-hover:text-[#ff9800] transition">
+                  5 Relatórios SQL
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Tabelas e gráficos (Radar, Barras, Linha, Rosca).
+                </p>
+              </div>
+            </div>
+
+            {/* Status da Fase 1 */}
+            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+              <div className="flex items-center space-x-3 mb-4">
+                <CheckCircle size={22} className="text-emerald-500" />
+                <div>
+                  <h2 className="text-base font-bold text-[#171a4a]">
+                    Fase 1 Concluída: Base, Layout & Identidade Visual
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Paleta de cores (#ffcc50, #ff9800, #2f2c79, #171a4a, #000020), Vite + React + TS,
+                    Tailwind v4, Tipos e cliente de API prontos para o commit.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                  Próximas Fases Planejadas para Commits Individuais:
+                </h4>
+                <ol className="list-decimal list-inside text-xs text-slate-700 space-y-1.5 font-medium">
+                  <li>
+                    <span className="font-bold text-[#2f2c79]">Fase 2:</span> Módulo de Questões (RF1) e Cadastro de Usuários/Colaboradores.
+                  </li>
+                  <li>
+                    <span className="font-bold text-[#2f2c79]">Fase 3:</span> Módulo de Avaliações e Composição com Pesos Ponderados (RF2, RF3, RF6).
+                  </li>
+                  <li>
+                    <span className="font-bold text-[#2f2c79]">Fase 4:</span> Módulo de Designações 360° (RF4).
+                  </li>
+                  <li>
+                    <span className="font-bold text-[#2f2c79]">Fase 5:</span> Módulo do Colaborador: Preenchimento de Questionários 360° (RF5).
+                  </li>
+                  <li>
+                    <span className="font-bold text-[#2f2c79]">Fase 6:</span> Módulo dos 5 Relatórios Analíticos com Tabelas e Gráficos Chart.js (RF7).
+                  </li>
+                  <li>
+                    <span className="font-bold text-[#2f2c79]">Fase 7:</span> Dashboard com KPIs agregados e testes finais.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Placeholder para abas que serão conectadas nas próximas fases */}
+        {activeTab !== 'dashboard' && (
+          <div className="bg-white rounded-xl p-12 border border-slate-200 text-center shadow-sm">
+            <div
+              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white mb-4 shadow-lg"
+              style={{ backgroundColor: '#2f2c79' }}
+            >
+              <Database size={32} style={{ color: '#ffcc50' }} />
+            </div>
+            <h2 className="text-xl font-bold text-[#171a4a] mb-2">
+              Aba Selecionada: {activeTab.toUpperCase()}
+            </h2>
+            <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
+              Esta seção será implementada na respectiva fase incremental, pronta para ser commitada separadamente no seu repositório Git.
+            </p>
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-[#000020] transition"
+              style={{ backgroundColor: '#ff9800' }}
+            >
+              Voltar ao Dashboard
+            </button>
+          </div>
+        )}
+      </main>
+
+      {/* Rodapé institucional */}
+      <footer className="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+          Trabalho Prático de Banco de Dados I • UEL • Prof. Dr. Anderson Paulo Avila Santos • 2026
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+export default App;
