@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Header, type TabType } from './components/Header';
 import { QuestoesManager } from './components/QuestoesManager';
 import { UsuariosManager } from './components/UsuariosManager';
+import { AvaliacoesManager } from './components/AvaliacoesManager';
 import type { Usuario } from './types';
 import {
   FileText,
@@ -187,30 +188,42 @@ export function App() {
               </div>
             </div>
 
-            {/* Status da Fase 2 */}
+            {/* Status da Fase 3 */}
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <CheckCircle size={22} className="text-emerald-500" />
                 <div>
                   <h2 className="text-base font-bold text-[#171a4a]">
-                    Fase 2 Concluída: Módulo de Questões (RF1) & Gestão de Colaboradores
+                    Fase 3 Concluída: Ciclos de Avaliação & Composição Ponderada (RF2, RF3, RF6)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Cadastros com formulários dinâmicos, escalas automáticas e listagens integradas à API.
+                    Particularidade do sistema 360° com pesos estratégicos por competência gravados atomicamente via JDBC.
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div
                   onClick={() => setActiveTab('questoes')}
                   className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
                 >
                   <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
-                    Abrir Módulo de Questões (RF1) →
+                    Banco de Questões (RF1) →
                   </h4>
                   <p className="text-xs text-slate-600">
-                    Visualize questões de múltipla escolha com alternativas e questões abertas de texto livre.
+                    Questões objetivas e subjetivas com alternativas.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab('avaliacoes')}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
+                >
+                  <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
+                    Ciclos & Pesos (RF2, RF3, RF6) →
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Definição de períodos e ponderação estratégica de competências.
                   </p>
                 </div>
 
@@ -219,10 +232,10 @@ export function App() {
                   className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
                 >
                   <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
-                    Abrir Gestão de Colaboradores →
+                    Gestão de Colaboradores →
                   </h4>
                   <p className="text-xs text-slate-600">
-                    Gerencie usuários, departamentos e cargos cadastrados na base do PostgreSQL.
+                    Organização de usuários por departamentos e cargos.
                   </p>
                 </div>
               </div>
@@ -233,13 +246,19 @@ export function App() {
         {/* Aba de Questões (RF1) */}
         {activeTab === 'questoes' && <QuestoesManager />}
 
+        {/* Aba de Ciclos & Pesos (RF2, RF3, RF6) */}
+        {activeTab === 'avaliacoes' && <AvaliacoesManager />}
+
         {/* Aba de Usuários / Colaboradores */}
         {activeTab === 'usuarios' && (
           <UsuariosManager onRefreshUsuarios={handleRefreshUsuarios} />
         )}
 
         {/* Placeholder para abas das próximas fases */}
-        {activeTab !== 'dashboard' && activeTab !== 'questoes' && activeTab !== 'usuarios' && (
+        {activeTab !== 'dashboard' &&
+          activeTab !== 'questoes' &&
+          activeTab !== 'usuarios' &&
+          activeTab !== 'avaliacoes' && (
           <div className="bg-white rounded-xl p-12 border border-slate-200 text-center shadow-sm">
             <div
               className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white mb-4 shadow-lg"
