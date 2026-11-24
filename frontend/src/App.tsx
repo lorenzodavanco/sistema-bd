@@ -4,6 +4,8 @@ import { QuestoesManager } from './components/QuestoesManager';
 import { UsuariosManager } from './components/UsuariosManager';
 import { AvaliacoesManager } from './components/AvaliacoesManager';
 import { DesignacoesManager } from './components/DesignacoesManager';
+import { ResponderAvaliacao } from './components/ResponderAvaliacao';
+import { RelatoriosHub } from './components/RelatoriosHub';
 import type { Usuario } from './types';
 import {
   FileText,
@@ -189,30 +191,42 @@ export function App() {
               </div>
             </div>
 
-            {/* Status da Fase 4 */}
+            {/* Status da Fase 6 */}
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <CheckCircle size={22} className="text-emerald-500" />
                 <div>
                   <h2 className="text-base font-bold text-[#171a4a]">
-                    Fase 4 Concluída: Matriz de Designações 360° (RF4)
+                    Fase 6 Concluída: Hub dos 5 Relatórios Analíticos com Tabelas & Gráficos Chart.js (RF7)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Atribuição de pares avaliador-avaliado por ciclo com garantia de unicidade UNIQUE(id_avaliacao, id_avaliador, id_avaliado).
+                    Página contínua com rolagem, sumário rápido de âncoras, gráficos interativos (Barras, Radar, Linhas, Rosca) e acordions com SQLs explicados.
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div
-                  onClick={() => setActiveTab('questoes')}
+                  onClick={() => setActiveTab('relatorios')}
+                  className="p-4 rounded-xl border border-slate-200 bg-amber-50/40 hover:bg-amber-50 transition cursor-pointer"
+                >
+                  <h4 className="text-xs font-bold text-[#ff9800] uppercase tracking-wider mb-1">
+                    5 Relatórios SQL (RF7) →
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Tabelas e gráficos com 100% dos recursos exigidos.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab('minhas-avaliacoes')}
                   className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
                 >
                   <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
-                    Questões (RF1) →
+                    Responder Avaliações (RF5) →
                   </h4>
                   <p className="text-xs text-slate-600">
-                    Objetivas e subjetivas.
+                    Questionários preenchidos pelo colaborador.
                   </p>
                 </div>
 
@@ -232,28 +246,21 @@ export function App() {
                   onClick={() => setActiveTab('designacoes')}
                   className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
                 >
-                  <h4 className="text-xs font-bold text-[#ff9800] uppercase tracking-wider mb-1">
-                    Designações (RF4) →
-                  </h4>
-                  <p className="text-xs text-slate-600">
-                    Quem avalia quem no ciclo.
-                  </p>
-                </div>
-
-                <div
-                  onClick={() => setActiveTab('usuarios')}
-                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
-                >
                   <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
-                    Colaboradores →
+                    Designações 360° (RF4) →
                   </h4>
                   <p className="text-xs text-slate-600">
-                    Usuários cadastrados.
+                    Acompanhamento de quem avalia quem.
                   </p>
                 </div>
               </div>
             </div>
           </div>
+        )}
+
+        {/* Aba de Minhas Avaliações / Responder (RF5) */}
+        {activeTab === 'minhas-avaliacoes' && (
+          <ResponderAvaliacao currentUser={currentUser} />
         )}
 
         {/* Aba de Questões (RF1) */}
@@ -265,38 +272,14 @@ export function App() {
         {/* Aba de Designações 360° (RF4) */}
         {activeTab === 'designacoes' && <DesignacoesManager />}
 
+        {/* Aba de Relatórios Analíticos (RF7) */}
+        {activeTab === 'relatorios' && (
+          <RelatoriosHub currentUser={currentUser} />
+        )}
+
         {/* Aba de Usuários / Colaboradores */}
         {activeTab === 'usuarios' && (
           <UsuariosManager onRefreshUsuarios={handleRefreshUsuarios} />
-        )}
-
-        {/* Placeholder para abas das próximas fases */}
-        {activeTab !== 'dashboard' &&
-          activeTab !== 'questoes' &&
-          activeTab !== 'usuarios' &&
-          activeTab !== 'avaliacoes' &&
-          activeTab !== 'designacoes' && (
-          <div className="bg-white rounded-xl p-12 border border-slate-200 text-center shadow-sm">
-            <div
-              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white mb-4 shadow-lg"
-              style={{ backgroundColor: '#2f2c79' }}
-            >
-              <Database size={32} style={{ color: '#ffcc50' }} />
-            </div>
-            <h2 className="text-xl font-bold text-[#171a4a] mb-2">
-              Aba Selecionada: {activeTab.toUpperCase()}
-            </h2>
-            <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-              Esta seção será conectada nas próximas etapas incrementais, permitindo testes e commits individuais.
-            </p>
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#000020] transition cursor-pointer"
-              style={{ backgroundColor: '#ff9800' }}
-            >
-              Voltar ao Dashboard
-            </button>
-          </div>
         )}
       </main>
 
