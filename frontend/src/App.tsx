@@ -3,6 +3,7 @@ import { Header, type TabType } from './components/Header';
 import { QuestoesManager } from './components/QuestoesManager';
 import { UsuariosManager } from './components/UsuariosManager';
 import { AvaliacoesManager } from './components/AvaliacoesManager';
+import { DesignacoesManager } from './components/DesignacoesManager';
 import type { Usuario } from './types';
 import {
   FileText,
@@ -188,30 +189,30 @@ export function App() {
               </div>
             </div>
 
-            {/* Status da Fase 3 */}
+            {/* Status da Fase 4 */}
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <CheckCircle size={22} className="text-emerald-500" />
                 <div>
                   <h2 className="text-base font-bold text-[#171a4a]">
-                    Fase 3 Concluída: Ciclos de Avaliação & Composição Ponderada (RF2, RF3, RF6)
+                    Fase 4 Concluída: Matriz de Designações 360° (RF4)
                   </h2>
                   <p className="text-xs text-slate-500">
-                    Particularidade do sistema 360° com pesos estratégicos por competência gravados atomicamente via JDBC.
+                    Atribuição de pares avaliador-avaliado por ciclo com garantia de unicidade UNIQUE(id_avaliacao, id_avaliador, id_avaliado).
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div
                   onClick={() => setActiveTab('questoes')}
                   className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
                 >
                   <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
-                    Banco de Questões (RF1) →
+                    Questões (RF1) →
                   </h4>
                   <p className="text-xs text-slate-600">
-                    Questões objetivas e subjetivas com alternativas.
+                    Objetivas e subjetivas.
                   </p>
                 </div>
 
@@ -220,10 +221,22 @@ export function App() {
                   className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
                 >
                   <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
-                    Ciclos & Pesos (RF2, RF3, RF6) →
+                    Ciclos & Pesos (RF2/3/6) →
                   </h4>
                   <p className="text-xs text-slate-600">
-                    Definição de períodos e ponderação estratégica de competências.
+                    Pesos ponderados por critério.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab('designacoes')}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
+                >
+                  <h4 className="text-xs font-bold text-[#ff9800] uppercase tracking-wider mb-1">
+                    Designações (RF4) →
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    Quem avalia quem no ciclo.
                   </p>
                 </div>
 
@@ -232,10 +245,10 @@ export function App() {
                   className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition cursor-pointer"
                 >
                   <h4 className="text-xs font-bold text-[#2f2c79] uppercase tracking-wider mb-1">
-                    Gestão de Colaboradores →
+                    Colaboradores →
                   </h4>
                   <p className="text-xs text-slate-600">
-                    Organização de usuários por departamentos e cargos.
+                    Usuários cadastrados.
                   </p>
                 </div>
               </div>
@@ -249,6 +262,9 @@ export function App() {
         {/* Aba de Ciclos & Pesos (RF2, RF3, RF6) */}
         {activeTab === 'avaliacoes' && <AvaliacoesManager />}
 
+        {/* Aba de Designações 360° (RF4) */}
+        {activeTab === 'designacoes' && <DesignacoesManager />}
+
         {/* Aba de Usuários / Colaboradores */}
         {activeTab === 'usuarios' && (
           <UsuariosManager onRefreshUsuarios={handleRefreshUsuarios} />
@@ -258,7 +274,8 @@ export function App() {
         {activeTab !== 'dashboard' &&
           activeTab !== 'questoes' &&
           activeTab !== 'usuarios' &&
-          activeTab !== 'avaliacoes' && (
+          activeTab !== 'avaliacoes' &&
+          activeTab !== 'designacoes' && (
           <div className="bg-white rounded-xl p-12 border border-slate-200 text-center shadow-sm">
             <div
               className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-white mb-4 shadow-lg"
