@@ -35,8 +35,8 @@ public class RelatorioService {
     }
 
     /** Relatório 4 — Pendências de resposta (quem ainda não respondeu). */
-    public List<Map<String, Object>> pendenciasRespostas(Integer idAvaliacao) {
-        return relatorioDAO.pendenciasRespostas(idAvaliacao);
+    public List<Map<String, Object>> pendenciasRespostas(Integer idAvaliacao, List<String> departamentos) {
+        return relatorioDAO.pendenciasRespostas(idAvaliacao, departamentos);
     }
 
     /** Relatório 5 — Ranking de colaboradores mais bem avaliados (com RANK e filtro textual). */

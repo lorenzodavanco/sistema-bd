@@ -59,11 +59,13 @@ public class RelatorioController {
 
     /**
      * Relatório 4 — Pendências de avaliação (avaliadores que ainda não responderam).
-     * GET /api/relatorios/pendencias?idAvaliacao=1
+     * GET /api/relatorios/pendencias?idAvaliacao=1&departamentos=Tecnologia&departamentos=RH
      */
     @GetMapping("/pendencias")
-    public List<Map<String, Object>> pendencias(@RequestParam Integer idAvaliacao) {
-        return relatorioService.pendenciasRespostas(idAvaliacao);
+    public List<Map<String, Object>> pendencias(
+            @RequestParam Integer idAvaliacao,
+            @RequestParam(required = false) List<String> departamentos) {
+        return relatorioService.pendenciasRespostas(idAvaliacao, departamentos);
     }
 
     /**

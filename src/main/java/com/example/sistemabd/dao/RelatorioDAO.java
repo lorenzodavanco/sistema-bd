@@ -132,10 +132,13 @@ public class RelatorioDAO {
 
     /**
      * Relatório 4 — Pendências de Resposta (Quem ainda não avaliou).
-     * Recursos: LEFT JOIN (para identificar ausência de respostas), GROUP BY, HAVING COUNT=0, ORDER BY.
+     * Recursos: LEFT JOIN (para identificar ausência de respostas), filtro IN por departamento, GROUP BY, HAVING COUNT=0, ORDER BY.
      */
-    public List<Map<String, Object>> pendenciasRespostas(Integer idAvaliacao) {
-        String sql = """
+    public List<Map<String, Object>> pendenciasRespostas(Integer idAvaliacao, List<String> departamentos) {
+        List<Object> params = new ArrayList<>();
+        params.add(idAvaliacao);
+
+        StringBuilder sql = new StringBuilder("""
                 SELECT
                     d.id_designacao,
                     a.titulo AS avaliacao,
@@ -153,7 +156,20 @@ public class RelatorioDAO {
                 JOIN USUARIO u_avaliado ON d.id_avaliado = u_avaliado.id_usuario
                 LEFT JOIN RESPOSTA r ON d.id_designacao = r.id_designacao
                 WHERE d.id_avaliacao = ?
-                GROUP BY
+                """);
+
+        // Filtro IN: departamentos do avaliador escolhidos na tela (opcional)
+        List<String> filtro = departamentos == null ? List.of()
+                : departamentos.stream().filter(dep -> dep != null && !dep.isBlank()).map(String::trim).toList();
+        if (!filtro.isEmpty()) {
+            sql.append(" AND u_avaliador.departamento IN (")
+               .append(String.join(", ", java.util.Collections.nCopies(filtro.size(), "?")))
+               .append(")");
+            params.addAll(filtro);
+        }
+
+        sql.append("""
+                 GROUP BY
                     d.id_designacao,
                     a.titulo,
                     u_avaliador.id_usuario,
@@ -166,8 +182,8 @@ public class RelatorioDAO {
                     u_avaliado.departamento
                 HAVING COUNT(r.id_resposta) = 0
                 ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC
-                """;
-        return jdbcTemplate.queryForList(sql, idAvaliacao);
+                """);
+        return jdbcTemplate.queryForList(sql.toString(), params.toArray());
     }
 
     /**

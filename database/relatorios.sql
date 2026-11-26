@@ -8,7 +8,7 @@
 --   3. Agregação e agrupamento (COUNT, AVG, SUM, GROUP BY, HAVING)
 --   4. Subconsulta
 --   5. Ordenação e ranking (ORDER BY, RANK() e FETCH FIRST)
---   6. Filtros diversos (WHERE com datas, faixas, IN, LIKE/ILIKE)
+--   6. Filtros diversos (WHERE com datas e faixas no R3, IN no R4, ILIKE no R5)
 -- =============================================================================
 
 -- =============================================================================
@@ -123,7 +123,7 @@ ORDER BY a.data_inicio ASC;
 
 -- =============================================================================
 -- RELATÓRIO 4: Pendências de Resposta (Quem Ainda Não Avaliou)
--- Endpoint: GET /api/relatorios/pendencias?idAvaliacao=1&departamento=Tecnologia
+-- Endpoint: GET /api/relatorios/pendencias?idAvaliacao=1&departamentos=Tecnologia&departamentos=RH
 -- Objetivo:
 --   Identificar avaliadores que possuem designações ativas mas ainda não preencheram
 --   suas avaliações, permitindo cobrança preventiva antes do encerramento do prazo.
@@ -132,7 +132,8 @@ ORDER BY a.data_inicio ASC;
 --   - Junção interna (JOIN com AVALIACAO e USUARIO para dados de avaliador e avaliado)
 --   - Agrupamento (GROUP BY)
 --   - Cláusula HAVING com contagem zero (HAVING COUNT(r.id_resposta) = 0)
---   - Filtros diversos (WHERE com igualdade e IN / LIKE opcionais)
+--   - Filtro com IN (departamentos do avaliador marcados na tela; opcional —
+--     o DAO só acrescenta esta linha quando há departamentos selecionados)
 --   - Ordenação (ORDER BY)
 -- =============================================================================
 SELECT
@@ -152,6 +153,7 @@ JOIN USUARIO u_avaliador ON d.id_avaliador = u_avaliador.id_usuario
 JOIN USUARIO u_avaliado ON d.id_avaliado = u_avaliado.id_usuario
 LEFT JOIN RESPOSTA r ON d.id_designacao = r.id_designacao
 WHERE d.id_avaliacao = :idAvaliacao
+  AND u_avaliador.departamento IN ('Tecnologia', 'Produto')
 GROUP BY
     d.id_designacao,
     a.titulo,
