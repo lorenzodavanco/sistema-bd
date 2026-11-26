@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  FileChartColumnIncreasing,
   LayoutDashboard,
   ClipboardCheck,
   Calendar,
@@ -48,9 +49,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onSelectTab, currentU
               className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md font-black text-white text-xl"
               style={{ backgroundColor: '#ff9800' }}
             >
-              360°
+              <FileChartColumnIncreasing size={22} className="text-white" />
             </div>
-            <span className="text-white font-bold text-lg tracking-tight">Avaliações 360°</span>
+            <span className="text-white font-bold text-lg tracking-tight">AvaliaMAX</span>
           </div>
 
           <div className="flex items-center space-x-3">

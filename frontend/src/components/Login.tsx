@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogIn, AlertCircle } from 'lucide-react';
+import { LogIn, AlertCircle, FileChartColumnIncreasing } from 'lucide-react';
 import type { Usuario } from '../types';
 import { api } from '../services/api';
 
@@ -41,9 +41,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-md font-black text-white text-2xl"
             style={{ backgroundColor: '#ff9800' }}
           >
-            360°
+            <FileChartColumnIncreasing size={28} className="text-white" />
           </div>
-          <h1 className="text-xl font-extrabold text-[#171a4a]">Avaliações 360°</h1>
+          <h1 className="text-xl font-extrabold text-[#171a4a]">AvaliaMAX</h1>
         </div>
 
         <div className="space-y-1.5">
