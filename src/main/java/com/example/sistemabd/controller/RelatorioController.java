@@ -24,7 +24,7 @@ public class RelatorioController {
     }
 
     /**
-     * Relatório 1 — Resultado consolidado por avaliado.
+     * Relatório 1: Resultado consolidado por avaliado.
      * GET /api/relatorios/consolidado?idAvaliacao=1&minAvaliadores=1
      */
     @GetMapping("/consolidado")
@@ -35,7 +35,7 @@ public class RelatorioController {
     }
 
     /**
-     * Relatório 2 — Radar de competências com comparativo geral.
+     * Relatório 2: Radar de competências com comparativo geral.
      * GET /api/relatorios/competencias?idAvaliacao=1&idAvaliado=2
      */
     @GetMapping("/competencias")
@@ -46,7 +46,7 @@ public class RelatorioController {
     }
 
     /**
-     * Relatório 3 — Evolução histórica entre ciclos por avaliado.
+     * Relatório 3: Evolução histórica entre ciclos por avaliado.
      * GET /api/relatorios/evolucao?idAvaliado=2&dataInicio=2025-01-01&dataFim=2026-12-31
      */
     @GetMapping("/evolucao")
@@ -58,7 +58,7 @@ public class RelatorioController {
     }
 
     /**
-     * Relatório 4 — Pendências de avaliação (avaliadores que ainda não responderam).
+     * Relatório 4: Pendências de avaliação (avaliadores que ainda não responderam).
      * GET /api/relatorios/pendencias?idAvaliacao=1&departamentos=Tecnologia&departamentos=RH
      */
     @GetMapping("/pendencias")
@@ -69,7 +69,7 @@ public class RelatorioController {
     }
 
     /**
-     * Relatório 5 — Ranking de colaboradores mais bem avaliados (com janela analítica RANK()).
+     * Relatório 5: Ranking de colaboradores mais bem avaliados (com janela analítica RANK()).
      * GET /api/relatorios/ranking?idAvaliacao=1&departamento=Tecnologia&limite=10
      */
     @GetMapping("/ranking")

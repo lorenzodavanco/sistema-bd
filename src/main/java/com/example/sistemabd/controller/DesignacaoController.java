@@ -24,7 +24,7 @@ public class DesignacaoController {
         this.respostaService = respostaService;
     }
 
-    // ===== CRUD Designação (RF4) =====
+    // CRUD Designação
 
     @GetMapping
     public List<Designacao> listarTodas() {
@@ -63,7 +63,7 @@ public class DesignacaoController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== Respostas da Designação (RF5) =====
+    // Respostas da Designação
 
     @GetMapping("/{id}/respostas")
     public List<Resposta> listarRespostas(@PathVariable Integer id) {

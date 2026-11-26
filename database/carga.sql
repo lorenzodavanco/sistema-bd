@@ -1,8 +1,5 @@
--- =============================================================================
--- CARGA DE DADOS DE TESTE (SEEDS EXPANDIDOS) - SISTEMA DE AVALIAÇÃO 360°
--- BANCO DE DADOS: PostgreSQL
--- =============================================================================
--- Volume total de dados gerados:
+-- Carga de dados de teste (rodar depois do schema.sql)
+-- Quantidades:
 --   * Usuários: 24 colaboradores (múltiplos departamentos e cargos)
 --   * Avaliações: 5 ciclos semestrais e executivos
 --   * Questões: 30 (18 múltipla escolha + 12 texto livre)
@@ -11,7 +8,6 @@
 --   * Designações: 68 pares avaliador-avaliado
 --   * Respostas: 690 registros de respostas computadas
 --   * Pendências intencionais: 5 designações sem resposta (para Relatório 4)
--- =============================================================================
 
 -- 1. USUARIOS
 INSERT INTO USUARIO (nome, email, cargo, departamento) VALUES

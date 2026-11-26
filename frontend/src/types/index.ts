@@ -44,7 +44,6 @@ export interface Designacao {
   idAvaliacao: number;
   idAvaliador: number;
   idAvaliado: number;
-  // Campos enriquecidos quando retornados com JOIN
   avaliacaoTitulo?: string;
   avaliadorNome?: string;
   avaliadorCargo?: string;
@@ -67,7 +66,7 @@ export interface Resposta {
   valorResposta: string;
 }
 
-// Interfaces dos 5 Relatórios (RF7)
+// Relatórios
 export interface RelatorioConsolidado {
   id_usuario: number;
   nome: string;

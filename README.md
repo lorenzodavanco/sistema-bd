@@ -6,13 +6,13 @@ Trabalho prático da disciplina de **Banco de Dados I**
 
 ---
 
-## 👥 Integrantes do Grupo
-* **Lorenzo:** `<!-- Preencher Nome Completo e RA -->`
-* **Thierry:** `<!-- Preencher Nome Completo e RA -->`
+## Integrantes do Grupo
+* **Lorenzo Davanço:** `2025012280364`
+* **Thierry Garcia:** `<!-- Preencher Nome Completo e RA -->`
 
 ---
 
-## 🎯 1. Natureza do Sistema e Particularidade (RF6)
+## 1. Natureza do Sistema e Particularidade (RF6)
 
 * **Natureza Escolhida:** Avaliação de Desempenho Profissional (Avaliação 360°).
 * **Particularidade Implementada:**  
@@ -22,9 +22,9 @@ Trabalho prático da disciplina de **Banco de Dados I**
 
 ---
 
-## 🏗️ 2. Arquitetura do Sistema
+## 2. Arquitetura do Sistema
 
-O sistema foi construído estritamente em conformidade com as diretrizes da disciplina:
+Tecnologias e organização, seguindo os requisitos da disciplina:
 * **SGBD:** PostgreSQL (SQL puro, DDL com constraints `PRIMARY KEY`, `FOREIGN KEY`, `UNIQUE`, `NOT NULL`, `CHECK`).
 * **Back-end:** Java 25 + Spring Boot (com `spring-boot-starter-jdbc` e `spring-boot-starter-web`).
 * **Acesso ao Banco de Dados:** Padrão **DAO (Data Access Object)** com `JdbcTemplate` (**sem JPA/Hibernate**, conforme exigência).
@@ -39,7 +39,7 @@ O sistema foi construído estritamente em conformidade com as diretrizes da disc
 
 ---
 
-## 🚀 3. Como Rodar o Sistema (Passo a Passo)
+## 3. Como Rodar o Sistema (Passo a Passo)
 
 ### Pré-requisitos
 * **Java 21 ou 25** instalado (`java -version`)
@@ -97,17 +97,17 @@ Emails de teste (da carga `carga.sql`):
 
 | Email | Colaborador |
 |---|---|
-| `carlos.silva@empresa.com` | Carlos Eduardo Silva — Gerente de Engenharia |
-| `ana.souza@empresa.com` | Ana Paula Souza — Tech Lead |
-| `lucas.ferreira@empresa.com` | Lucas Ferreira — Desenvolvedor Pleno |
-| `gabriel.monteiro@empresa.com` | Gabriel Monteiro — Desenvolvedor Senior |
-| `juliana.rocha@empresa.com` | Juliana Rocha — Desenvolvedora Junior |
+| `carlos.silva@empresa.com` | Carlos Eduardo Silva (Gerente de Engenharia) |
+| `ana.souza@empresa.com` | Ana Paula Souza (Tech Lead) |
+| `lucas.ferreira@empresa.com` | Lucas Ferreira (Desenvolvedor Pleno) |
+| `gabriel.monteiro@empresa.com` | Gabriel Monteiro (Desenvolvedor Senior) |
+| `juliana.rocha@empresa.com` | Juliana Rocha (Desenvolvedora Junior) |
 
 ---
 
-## 📊 4. Cobertura dos Recursos SQL Obrigatórios (Seção 5)
+## 4. Cobertura dos Recursos SQL Obrigatórios (Seção 5)
 
-Todos os recursos SQL exigidos pela disciplina foram distribuídos estrategicamente entre os relatórios:
+Onde cada recurso SQL exigido aparece nos relatórios:
 
 | Recurso SQL Exigido | Onde é Utilizado no Sistema |
 |---|---|
@@ -122,7 +122,7 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 
 ---
 
-## 📈 5. Detalhamento dos 5 Relatórios (RF7)
+## 5. Detalhamento dos 5 Relatórios (RF7)
 
 ### Relatório 1: Resultado Consolidado por Avaliado
 * **Rota:** `GET /api/relatorios/consolidado?idAvaliacao=3&minAvaliadores=2`
@@ -151,13 +151,13 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 
 ### Relatório 5: Ranking de Desempenho com Função de Janela
 * **Rota:** `GET /api/relatorios/ranking?idAvaliacao=3&departamento=Tecnologia&limite=10`
-* **Objetivo:** Classificar formalmente os profissionais mais bem avaliados (Top Performers) usando a função de janela `RANK() OVER`, com filtro textual flexível por departamento (`ILIKE`) e limite configurável (`FETCH FIRST :limite ROWS ONLY`).
+* **Objetivo:** Classificar os colaboradores mais bem avaliados usando a função de janela `RANK() OVER`, com filtro de texto por departamento (`ILIKE`) e limite configurável (`FETCH FIRST :limite ROWS ONLY`).
 * **Visualização no Frontend:** Tabela de classificação com pódio + Gráfico de Barras Verticais.
 * **SQL:** [Relatório 5 em `database/relatorios.sql`](database/relatorios.sql#L173).
 
 ---
 
-## 📡 6. Resumo dos Endpoints da API
+## 6. Resumo dos Endpoints da API
 
 ### Autenticação / Identificação do Usuário
 | Método | Endpoint | Descrição |
@@ -173,7 +173,7 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 | `PUT` | `/api/usuarios/{id}` | Atualiza usuário existente |
 | `DELETE` | `/api/usuarios/{id}` | Remove usuário |
 
-### RF1 — Questões e Alternativas
+### RF1: Questões e Alternativas
 | Método | Endpoint | Descrição |
 |---|---|---|
 | `GET` | `/api/questoes` | Lista todas as questões |
@@ -183,7 +183,7 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 | `PUT` | `/api/questoes/{id}` | Atualiza enunciado, tipo e alternativas |
 | `DELETE` | `/api/questoes/{id}` | Remove questão |
 
-### RF2 e RF3 — Avaliações e Montagem de Composição
+### RF2 e RF3: Avaliações e Montagem de Composição
 | Método | Endpoint | Descrição |
 |---|---|---|
 | `GET` | `/api/avaliacoes` | Lista todas as avaliações/ciclos |
@@ -195,7 +195,7 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 | `PUT` | `/api/avaliacoes/{id}/questoes` | Monta ou atualiza a composição da avaliação com pesos (RF3 + RF6) |
 | `DELETE` | `/api/avaliacoes/{id}/questoes/{idQuestao}` | Remove uma questão da avaliação |
 
-### RF4 e RF5 — Designações e Registro de Respostas
+### RF4 e RF5: Designações e Registro de Respostas
 | Método | Endpoint | Descrição |
 |---|---|---|
 | `GET` | `/api/designacoes` | Lista todas as designações |
@@ -207,7 +207,7 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 | `GET` | `/api/designacoes/{id}/respostas` | Consulta respostas registradas em uma designação |
 | `POST` | `/api/designacoes/{id}/respostas` | Registra pacote de respostas em transação atômica (RF5) |
 
-### RF7 — Relatórios Analíticos
+### RF7: Relatórios Analíticos
 | Método | Endpoint | Descrição |
 |---|---|---|
 | `GET` | `/api/relatorios/consolidado` | Resultado consolidado e média ponderada (parâmetros: `idAvaliacao`, `minAvaliadores`) |
@@ -218,7 +218,7 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 
 ---
 
-## 📐 7. Modelagem do Banco e Normalização (3FN)
+## 7. Modelagem do Banco e Normalização (3FN)
 
-* **Diagrama Conceitual (DER):** Arquivo vetorial de alta definição disponível em [docs/der.svg](docs/der.svg).
+* **Diagrama Conceitual (DER):** Disponível em [docs/der.svg](docs/der.svg).
 * **Esquema Relacional e Justificativa da 3FN:** Arquivo textual completo disponível em [docs/esquema.txt](docs/esquema.txt).

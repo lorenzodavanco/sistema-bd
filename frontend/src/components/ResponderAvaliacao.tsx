@@ -33,7 +33,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null);
 
-  // Modal de Preenchimento / Visualização
   const [modalAberto, setModalAberto] = useState(false);
   const [designacaoAtiva, setDesignacaoAtiva] = useState<Designacao | null>(null);
   const [questoesQuestionario, setQuestoesQuestionario] = useState<QuestaoComDetalhes[]>([]);
@@ -70,7 +69,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
 
       setDesignacoes(minhasDesigs);
 
-      // Checa quais já foram respondidas
       const statusMap: { [id: number]: boolean } = {};
       await Promise.all(
         minhasDesigs.map(async (d) => {
@@ -97,10 +95,9 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
     setModalAberto(true);
 
     try {
-      // 1. Busca composição do ciclo
       const composicao = await api.avaliacoes.listarQuestoes(d.idAvaliacao);
 
-      // 2. Para cada questão da composição, busca enunciado, tipo e alternativas
+      // Busca enunciado, tipo e alternativas de cada questão do ciclo
       const detalhes: QuestaoComDetalhes[] = await Promise.all(
         composicao.map(async (c: any) => {
           const q = await api.questoes.buscarPorId(c.idQuestao);
@@ -118,7 +115,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
 
       setQuestoesQuestionario(detalhes);
 
-      // 3. Se for somente leitura ou já tiver respostas, carrega as respostas existentes
       if (somenteLeitura || statusRespostas[d.idDesignacao]) {
         const respostasExistentes = await api.designacoes.listarRespostas(d.idDesignacao);
         const mapResp: { [idQuestao: number]: string } = {};
@@ -136,27 +132,24 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
     }
   };
 
-  // Preenchimento rápido para o Pitch de 5 minutos
-  const preencherAutomaticamenteDemo = () => {
-    const respostasDemo: { [idQuestao: number]: string } = {};
+  const preencherAutomaticamente = () => {
+    const respostasExemplo: { [idQuestao: number]: string } = {};
     questoesQuestionario.forEach((q) => {
       if (q.tipoQuestao === 'MULTIPLA_ESCOLHA') {
-        // Seleciona 3 (Bom) ou 4 (Excelente) para um bom resultado de teste
         const nota = Math.random() > 0.4 ? '4' : '3';
-        respostasDemo[q.idQuestao] = nota;
+        respostasExemplo[q.idQuestao] = nota;
       } else {
-        respostasDemo[q.idQuestao] =
+        respostasExemplo[q.idQuestao] =
           'Profissional muito dedicado, com excelente capacidade de resolução técnica e colaboração com o time.';
       }
     });
-    setRespostasForm(respostasDemo);
+    setRespostasForm(respostasExemplo);
   };
 
   const handleSubmeterRespostas = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!designacaoAtiva) return;
 
-    // Validação se todas foram respondidas
     const faltando = questoesQuestionario.find(
       (q) => !respostasForm[q.idQuestao] || respostasForm[q.idQuestao].trim() === ''
     );
@@ -180,7 +173,7 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
 
       setFeedback({
         tipo: 'sucesso',
-        texto: 'Avaliação 360° enviada com sucesso! Respostas gravadas atomicamente no banco.',
+        texto: 'Avaliação enviada com sucesso!',
       });
 
       setModalAberto(false);
@@ -214,7 +207,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho do Módulo */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
@@ -236,7 +228,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
         </div>
       </div>
 
-      {/* Banner de Feedback */}
       {feedback && (
         <div
           className={`flex items-center justify-between p-4 rounded-xl text-xs font-semibold ${
@@ -255,7 +246,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
         </div>
       )}
 
-      {/* Seção 1: Avaliações Pendentes */}
       <div className="space-y-3">
         <h3 className="text-sm font-extrabold uppercase tracking-wider text-[#171a4a] flex items-center space-x-2">
           <Clock size={16} className="text-[#ff9800]" />
@@ -335,7 +325,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
         )}
       </div>
 
-      {/* Seção 2: Avaliações Concluídas */}
       {concluidas.length > 0 && (
         <div className="space-y-3 pt-4">
           <h3 className="text-sm font-extrabold uppercase tracking-wider text-[#171a4a] flex items-center space-x-2">
@@ -381,11 +370,9 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
         </div>
       )}
 
-      {/* Modal de Preenchimento / Visualização */}
       {modalAberto && designacaoAtiva && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col border border-slate-200">
-            {/* Topo do Questionário */}
             <div
               className="px-6 py-4 flex items-center justify-between text-white rounded-t-2xl shrink-0"
               style={{ backgroundColor: '#171a4a' }}
@@ -394,7 +381,7 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
                 <div className="flex items-center space-x-2">
                   <ClipboardCheck size={20} style={{ color: '#ffcc50' }} />
                   <h3 className="font-bold text-base">
-                    {modoVisualizacao ? 'Respostas da Avaliação 360°' : 'Questionário de Avaliação 360°'}
+                    {modoVisualizacao ? 'Respostas da Avaliação AvaliaMAX' : 'Questionário de Avaliação AvaliaMAX'}
                   </h3>
                 </div>
                 <p className="text-xs text-slate-300 mt-0.5">
@@ -414,7 +401,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
               </button>
             </div>
 
-            {/* Barra de Ações Rápidas do Pitch (Preenchimento Automático) */}
             {!modoVisualizacao && (
               <div className="bg-slate-50 px-6 py-2.5 border-b border-slate-200 flex items-center justify-between shrink-0">
                 <span className="text-xs text-slate-500 font-medium">
@@ -423,16 +409,15 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
 
                 <button
                   type="button"
-                  onClick={preencherAutomaticamenteDemo}
+                  onClick={preencherAutomaticamente}
                   className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1 rounded-lg transition border border-[#ff9800]/40 text-[#171a4a] hover:bg-[#ff9800]/10 cursor-pointer"
                 >
                   <Sparkles size={13} className="text-[#ff9800]" />
-                  <span>Preencher Automaticamente (Demo / Pitch)</span>
+                  <span>Preencher automaticamente</span>
                 </button>
               </div>
             )}
 
-            {/* Perguntas com Scroll */}
             <form onSubmit={handleSubmeterRespostas} className="flex-1 flex flex-col overflow-hidden">
               <div className="p-6 overflow-y-auto space-y-6 flex-1">
                 {carregandoQuestionario ? (
@@ -474,7 +459,6 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
                           </div>
                         </div>
 
-                        {/* Múltipla Escolha: Botões de Alternativas */}
                         {q.tipoQuestao === 'MULTIPLA_ESCOLHA' ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
                             {q.alternativas.map((alt) => {
@@ -535,12 +519,9 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
                 )}
               </div>
 
-              {/* Rodapé do Modal */}
               <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between rounded-b-2xl shrink-0">
                 <span className="text-xs text-slate-500">
-                  {modoVisualizacao
-                    ? 'Questionário em modo de visualização.'
-                    : 'Transação atômica gerenciada pelo PostgreSQL (@Transactional).'}
+                  {modoVisualizacao ? 'Somente leitura.' : ''}
                 </span>
 
                 <div className="flex items-center space-x-3">
@@ -560,7 +541,7 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
                       style={{ backgroundColor: '#ff9800' }}
                     >
                       <Send size={14} />
-                      <span>{enviando ? 'Enviando...' : 'Submeter Avaliação 360°'}</span>
+                      <span>{enviando ? 'Enviando...' : 'Enviar Avaliação'}</span>
                     </button>
                   )}
                 </div>

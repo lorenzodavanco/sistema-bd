@@ -37,7 +37,7 @@ export function App() {
     setCurrentUser(null);
   }, []);
 
-  // Após editar/remover colaboradores, atualiza os dados do usuário logado (ou encerra a sessão se ele foi removido)
+  // recarrega o usuário logado depois de editar colaboradores (se ele foi removido, faz logout)
   const handleRefreshUsuarios = useCallback(async () => {
     if (!currentUser) return;
     try {

@@ -20,7 +20,6 @@ export const AvaliacoesManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null);
 
-  // Modal de Criação / Edição de Avaliação
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [titulo, setTitulo] = useState('');
@@ -29,14 +28,12 @@ export const AvaliacoesManager: React.FC = () => {
   const [dataFim, setDataFim] = useState('');
   const [salvandoAvaliacao, setSalvandoAvaliacao] = useState(false);
 
-  // Modal / Drawer de Montagem da Composição com Pesos
   const [composicaoModalAberta, setComposicaoModalAberta] = useState(false);
   const [avaliacaoSelecionada, setAvaliacaoSelecionada] = useState<Avaliacao | null>(null);
   const [composicaoAtual, setComposicaoAtual] = useState<Map<number, number>>(new Map()); // idQuestao -> peso
   const [carregandoComposicao, setCarregandoComposicao] = useState(false);
   const [salvandoComposicao, setSalvandoComposicao] = useState(false);
 
-  // Cache de contagem de questões por avaliação
   const [contagemQuestoes, setContagemQuestoes] = useState<{ [id: number]: number }>({});
 
   useEffect(() => {
@@ -53,7 +50,6 @@ export const AvaliacoesManager: React.FC = () => {
       setAvaliacoes(listaAvaliacoes);
       setTodasQuestoes(listaQuestoes);
 
-      // Carrega a quantidade de questões de cada avaliação
       const contagens: { [id: number]: number } = {};
       await Promise.all(
         listaAvaliacoes.map(async (av) => {
@@ -150,7 +146,6 @@ export const AvaliacoesManager: React.FC = () => {
     }
   };
 
-  // Abrir Modal de Composição com Pesos
   const abrirModalComposicao = async (av: Avaliacao) => {
     setAvaliacaoSelecionada(av);
     setCarregandoComposicao(true);
@@ -223,7 +218,6 @@ export const AvaliacoesManager: React.FC = () => {
     }
   };
 
-  // Cálculo da soma dos pesos para exibir percentual de cada competência
   const ehTextoLivre = (idQuestao: number) =>
     todasQuestoes.find((q) => q.idQuestao === idQuestao)?.tipoQuestao === 'TEXTO_LIVRE';
 
@@ -244,7 +238,6 @@ export const AvaliacoesManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho do Módulo */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
@@ -267,7 +260,6 @@ export const AvaliacoesManager: React.FC = () => {
         </button>
       </div>
 
-      {/* Banner de Feedback */}
       {feedback && (
         <div
           className={`flex items-center justify-between p-4 rounded-xl text-xs font-semibold ${
@@ -286,7 +278,6 @@ export const AvaliacoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Lista de Avaliações */}
       {loading ? (
         <div className="text-center py-12 text-sm text-slate-500">Carregando ciclos de avaliação...</div>
       ) : avaliacoes.length === 0 ? (
@@ -372,7 +363,6 @@ export const AvaliacoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Modal Criar / Editar Avaliação */}
       {modalAvaliacaoAberto && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200">
@@ -403,7 +393,7 @@ export const AvaliacoesManager: React.FC = () => {
                   type="text"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
-                  placeholder="Ex: Avaliação de Desempenho 360° - 2026.1"
+                  placeholder="Ex: Avaliação de Desempenho AvaliaMAX - 2026.1"
                   className="w-full p-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff9800]"
                   required
                 />
@@ -450,7 +440,6 @@ export const AvaliacoesManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* Botões */}
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
@@ -473,11 +462,9 @@ export const AvaliacoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Modal / Drawer de Montagem de Composição e Pesos */}
       {composicaoModalAberta && avaliacaoSelecionada && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200">
-            {/* Topo do Modal */}
             <div
               className="px-6 py-4 flex items-center justify-between text-white rounded-t-2xl shrink-0"
               style={{ backgroundColor: '#171a4a' }}
@@ -502,7 +489,6 @@ export const AvaliacoesManager: React.FC = () => {
               </button>
             </div>
 
-            {/* Sub-barra informativa com soma total de pesos */}
             <div className="bg-slate-50 px-6 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 shrink-0">
               <div className="flex items-center space-x-4 text-xs">
                 <div>
@@ -517,7 +503,6 @@ export const AvaliacoesManager: React.FC = () => {
 
             </div>
 
-            {/* Conteúdo com scroll: lista de questões */}
             <div className="p-6 overflow-y-auto flex-1 space-y-3">
               {carregandoComposicao ? (
                 <div className="text-center py-12 text-sm text-slate-500">
@@ -582,7 +567,6 @@ export const AvaliacoesManager: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Controle de Peso */}
                       {isChecked && q.tipoQuestao === 'MULTIPLA_ESCOLHA' && (
                         <div className="flex items-center space-x-3 self-end sm:self-center shrink-0 bg-white p-2 rounded-xl border border-slate-200">
                           <div className="text-right">
@@ -630,7 +614,6 @@ export const AvaliacoesManager: React.FC = () => {
               )}
             </div>
 
-            {/* Rodapé do Modal */}
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between rounded-b-2xl shrink-0">
               <span />
 

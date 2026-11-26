@@ -23,14 +23,12 @@ export const QuestoesManager: React.FC = () => {
   const [busca, setBusca] = useState('');
   const [feedback, setFeedback] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null);
 
-  // Alternativas abertas no accordion
   const [alternativasPorQuestao, setAlternativasPorQuestao] = useState<{
     [id: number]: Alternativa[];
   }>({});
   const [loadingAlternativas, setLoadingAlternativas] = useState<{ [id: number]: boolean }>({});
   const [openAccordion, setOpenAccordion] = useState<{ [id: number]: boolean }>({});
 
-  // Estado do Modal (Criar / Editar)
   const [modalAberto, setModalAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [enunciado, setEnunciado] = useState('');
@@ -162,7 +160,6 @@ export const QuestoesManager: React.FC = () => {
       }
 
       setModalAberto(false);
-      // Limpa cache de alternativas para recarregar
       setAlternativasPorQuestao({});
       await carregarQuestoes();
     } catch (err: any) {
@@ -201,7 +198,6 @@ export const QuestoesManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho do Módulo */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
@@ -224,7 +220,6 @@ export const QuestoesManager: React.FC = () => {
         </button>
       </div>
 
-      {/* Banner de Feedback */}
       {feedback && (
         <div
           className={`flex items-center justify-between p-4 rounded-xl text-xs font-semibold ${
@@ -243,7 +238,6 @@ export const QuestoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -274,7 +268,6 @@ export const QuestoesManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Lista de Questões */}
       {loading ? (
         <div className="text-center py-12 text-sm text-slate-500">Carregando questões do banco...</div>
       ) : questoesFiltradas.length === 0 ? (
@@ -312,7 +305,6 @@ export const QuestoesManager: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Ações */}
                   <div className="flex items-center space-x-2 self-end sm:self-center shrink-0">
                     {isMultipla && (
                       <button
@@ -342,7 +334,6 @@ export const QuestoesManager: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Accordion de Alternativas */}
                 {isMultipla && isOpen && (
                   <div className="bg-slate-50/80 px-5 py-3 border-t border-slate-100">
                     <h5 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
@@ -378,7 +369,6 @@ export const QuestoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Criação / Edição */}
       {modalAberto && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
@@ -401,7 +391,6 @@ export const QuestoesManager: React.FC = () => {
             </div>
 
             <form onSubmit={handleSalvar} className="p-6 space-y-4">
-              {/* Enunciado */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
                   Enunciado / Critério de Avaliação *
@@ -416,7 +405,6 @@ export const QuestoesManager: React.FC = () => {
                 />
               </div>
 
-              {/* Tipo de Questão */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
                   Tipo de Questão *
@@ -454,7 +442,6 @@ export const QuestoesManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* Se Múltipla Escolha: Alternativas */}
               {tipoQuestao === 'MULTIPLA_ESCOLHA' && (
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between">
@@ -525,7 +512,6 @@ export const QuestoesManager: React.FC = () => {
                 </div>
               )}
 
-              {/* Botões do Modal */}
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"

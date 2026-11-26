@@ -68,7 +68,7 @@ public class QuestaoDAO {
         jdbcTemplate.update("DELETE FROM QUESTAO WHERE id_questao = ?", id);
     }
 
-    // ===== Alternativas =====
+    // Alternativas
 
     public List<Alternativa> findAlternativasByQuestaoId(Integer idQuestao) {
         return jdbcTemplate.query(

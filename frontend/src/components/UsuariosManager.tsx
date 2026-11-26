@@ -26,7 +26,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
   const [filtroDept, setFiltroDept] = useState<string>('TODOS');
   const [feedback, setFeedback] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null);
 
-  // Modal State
   const [modalAberto, setModalAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [nome, setNome] = useState('');
@@ -138,7 +137,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho do Módulo */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
@@ -161,7 +159,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
         </button>
       </div>
 
-      {/* Banner de Feedback */}
       {feedback && (
         <div
           className={`flex items-center justify-between p-4 rounded-xl text-xs font-semibold ${
@@ -180,7 +177,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
         </div>
       )}
 
-      {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -210,7 +206,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
         </div>
       </div>
 
-      {/* Grid de Colaboradores */}
       {loading ? (
         <div className="text-center py-12 text-sm text-slate-500">Carregando colaboradores...</div>
       ) : usuariosFiltrados.length === 0 ? (
@@ -289,7 +284,7 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
                   >
                     {u.departamento}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium">Ativo no 360°</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Ativo no AvaliaMAX</span>
                 </div>
               </div>
             );
@@ -297,7 +292,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
         </div>
       )}
 
-      {/* Modal Criar/Editar */}
       {modalAberto && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200">
@@ -378,7 +372,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
                 </div>
               </div>
 
-              {/* Botões */}
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"

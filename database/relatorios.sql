@@ -1,17 +1,13 @@
--- =============================================================================
--- CONSULTAS SQL DOS RELATÓRIOS (RF7) - SISTEMA DE AVALIAÇÃO DE DESEMPENHO 360°
--- BANCO DE DADOS: PostgreSQL
+-- Consultas dos relatórios (RF7)
 --
--- Juntas, estas consultas utilizam TODOS os recursos exigidos na Seção 5 do projeto:
+-- Recursos da seção 5 do enunciado usados nas consultas:
 --   1. Junção interna (JOIN)
 --   2. Junção externa (LEFT JOIN)
 --   3. Agregação e agrupamento (COUNT, AVG, SUM, GROUP BY, HAVING)
 --   4. Subconsulta
 --   5. Ordenação e ranking (ORDER BY, RANK() e FETCH FIRST)
 --   6. Filtros diversos (WHERE com datas e faixas no R3, IN no R4, ILIKE no R5)
--- =============================================================================
 
--- =============================================================================
 -- RELATÓRIO 1: Resultado Consolidado por Avaliado (Média Ponderada 360°)
 -- Endpoint: GET /api/relatorios/consolidado?idAvaliacao=1&minAvaliadores=1
 -- Objetivo:
@@ -24,7 +20,6 @@
 --   - Agrupamento (GROUP BY nos dados cadastrais do avaliado)
 --   - Cláusula HAVING (HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores)
 --   - Ordenação (ORDER BY media_ponderada DESC)
--- =============================================================================
 SELECT
     u.id_usuario,
     u.nome,
@@ -46,8 +41,6 @@ GROUP BY u.id_usuario, u.nome, u.cargo, u.departamento
 HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores
 ORDER BY media_ponderada DESC;
 
-
--- =============================================================================
 -- RELATÓRIO 2: Radar de Competências com Comparativo da Média Geral da Empresa
 -- Endpoint: GET /api/relatorios/competencias?idAvaliacao=1&idAvaliado=2
 -- Objetivo:
@@ -60,7 +53,6 @@ ORDER BY media_ponderada DESC;
 --   - Agrupamento (GROUP BY)
 --   - Subconsulta correlacionada (calcula a média geral de todos os avaliados para a mesma questão)
 --   - Ordenação (ORDER BY)
--- =============================================================================
 SELECT
     q.id_questao,
     q.enunciado AS competencia,
@@ -85,8 +77,6 @@ WHERE d.id_avaliacao = :idAvaliacao
 GROUP BY q.id_questao, q.enunciado, c.peso, d.id_avaliacao
 ORDER BY q.id_questao;
 
-
--- =============================================================================
 -- RELATÓRIO 3: Evolução Histórica entre Ciclos por Avaliado (com Filtro Temporal)
 -- Endpoint: GET /api/relatorios/evolucao?idAvaliado=2&dataInicio=2025-01-01&dataFim=2026-12-31
 -- Objetivo:
@@ -98,7 +88,6 @@ ORDER BY q.id_questao;
 --   - Agrupamento (GROUP BY nos dados da avaliação)
 --   - Filtro temporal e faixas de datas (WHERE a.data_inicio >= :dataInicio AND a.data_fim <= :dataFim)
 --   - Ordenação cronológica (ORDER BY a.data_inicio ASC)
--- =============================================================================
 SELECT
     a.id_avaliacao,
     a.titulo AS ciclo,
@@ -120,8 +109,6 @@ WHERE d.id_avaliado = :idAvaliado
 GROUP BY a.id_avaliacao, a.titulo, a.data_inicio, a.data_fim
 ORDER BY a.data_inicio ASC;
 
-
--- =============================================================================
 -- RELATÓRIO 4: Pendências de Resposta (Quem Ainda Não Avaliou)
 -- Endpoint: GET /api/relatorios/pendencias?idAvaliacao=1&departamentos=Tecnologia&departamentos=RH
 -- Objetivo:
@@ -132,10 +119,9 @@ ORDER BY a.data_inicio ASC;
 --   - Junção interna (JOIN com AVALIACAO e USUARIO para dados de avaliador e avaliado)
 --   - Agrupamento (GROUP BY)
 --   - Cláusula HAVING com contagem zero (HAVING COUNT(r.id_resposta) = 0)
---   - Filtro com IN (departamentos do avaliador marcados na tela; opcional —
+--   - Filtro com IN (departamentos do avaliador marcados na tela; opcional:
 --     o DAO só acrescenta esta linha quando há departamentos selecionados)
 --   - Ordenação (ORDER BY)
--- =============================================================================
 SELECT
     d.id_designacao,
     a.titulo AS avaliacao,
@@ -168,8 +154,6 @@ GROUP BY
 HAVING COUNT(r.id_resposta) = 0
 ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;
 
-
--- =============================================================================
 -- RELATÓRIO 5: Ranking de Desempenho com Função de Janela e Filtro Textual
 -- Endpoint: GET /api/relatorios/ranking?idAvaliacao=1&departamento=Tec&limite=10
 -- Objetivo:
@@ -181,7 +165,6 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;
 --   - Filtro textual com operador LIKE/ILIKE (u.departamento ILIKE :departamento)
 --   - Junção interna (JOIN)
 --   - Agregação e agrupamento (SUM, COUNT, GROUP BY, HAVING)
--- =============================================================================
 SELECT
     RANK() OVER (
         ORDER BY ROUND(SUM(CAST(r.valor_resposta AS NUMERIC) * c.peso) / SUM(c.peso), 2) DESC

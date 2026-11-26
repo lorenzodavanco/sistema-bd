@@ -9,14 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * DAO dedicado às consultas analíticas dos relatórios (RF7).
- * Cobre rigorosamente todos os recursos SQL exigidos na Seção 5:
- *   - JOIN interno
- *   - LEFT JOIN externo
- *   - Agregação: COUNT, AVG, SUM, GROUP BY, HAVING
- *   - Subconsulta correlacionada
- *   - Ordenação e ranking: ORDER BY, RANK(), FETCH FIRST
- *   - Filtros: datas, faixas, IN, LIKE/ILIKE
+ * Consultas dos relatórios (RF7). O SQL comentado está em database/relatorios.sql.
  */
 @Repository
 public class RelatorioDAO {
@@ -28,7 +21,7 @@ public class RelatorioDAO {
     }
 
     /**
-     * Relatório 1 — Resultado consolidado por avaliado (com peso por critério).
+     * Relatório 1: Resultado consolidado por avaliado (com peso por critério).
      * Recursos: JOIN, SUM, AVG, COUNT DISTINCT, GROUP BY, HAVING, ORDER BY.
      */
     public List<Map<String, Object>> consolidadoPorAvaliado(Integer idAvaliacao, Integer minAvaliadores) {
@@ -59,7 +52,7 @@ public class RelatorioDAO {
     }
 
     /**
-     * Relatório 2 — Radar de Competências com Comparativo Geral da Empresa.
+     * Relatório 2: Radar de Competências com Comparativo Geral da Empresa.
      * Recursos: JOIN, AVG, COUNT, GROUP BY, Subconsulta correlacionada, ORDER BY.
      */
     public List<Map<String, Object>> desempenhoPorQuestao(Integer idAvaliacao, Integer idAvaliado) {
@@ -91,7 +84,7 @@ public class RelatorioDAO {
     }
 
     /**
-     * Relatório 3 — Evolução Histórica entre Ciclos (com filtro temporal).
+     * Relatório 3: Evolução Histórica entre Ciclos (com filtro temporal).
      * Recursos: JOIN, SUM, COUNT, GROUP BY, WHERE com faixa de datas, ORDER BY cronológico.
      */
     public List<Map<String, Object>> evolucaoPorCiclo(Integer idAvaliado, LocalDate dataInicio, LocalDate dataFim) {
@@ -131,7 +124,7 @@ public class RelatorioDAO {
     }
 
     /**
-     * Relatório 4 — Pendências de Resposta (Quem ainda não avaliou).
+     * Relatório 4: Pendências de Resposta (Quem ainda não avaliou).
      * Recursos: LEFT JOIN (para identificar ausência de respostas), filtro IN por departamento, GROUP BY, HAVING COUNT=0, ORDER BY.
      */
     public List<Map<String, Object>> pendenciasRespostas(Integer idAvaliacao, List<String> departamentos) {
@@ -187,7 +180,7 @@ public class RelatorioDAO {
     }
 
     /**
-     * Relatório 5 — Ranking de Desempenho com Função de Janela e Filtro Textual.
+     * Relatório 5: Ranking de Desempenho com Função de Janela e Filtro Textual.
      * Recursos: RANK() OVER, FETCH FIRST, LIKE/ILIKE, JOIN, GROUP BY, HAVING.
      */
     public List<Map<String, Object>> rankingDesempenho(Integer idAvaliacao, String departamento, Integer limite) {

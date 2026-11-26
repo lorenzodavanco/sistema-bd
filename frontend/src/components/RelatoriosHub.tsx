@@ -39,7 +39,6 @@ import type {
 } from '../types';
 import { api } from '../services/api';
 
-// Registra todos os módulos necessários do Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -63,11 +62,9 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loadingBase, setLoadingBase] = useState(true);
 
-  // Parâmetros Globais / Seleções
   const [avaliacaoId, setAvaliacaoId] = useState<number | ''>('');
   const [avaliadoId, setAvaliadoId] = useState<number | ''>('');
 
-  // Parâmetros Específicos dos Relatórios
   const [minAvaliadores, setMinAvaliadores] = useState<number>(1);
   const [dataInicioEvolucao, setDataInicioEvolucao] = useState<string>('2025-01-01');
   const [dataFimEvolucao, setDataFimEvolucao] = useState<string>('2026-12-31');
@@ -75,7 +72,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   const [limiteRanking, setLimiteRanking] = useState<number>(10);
   const [departamentosPendencias, setDepartamentosPendencias] = useState<string[]>([]);
 
-  // Dados dos 5 Relatórios
   const [dadosR1, setDadosR1] = useState<RelatorioConsolidado[]>([]);
   const [dadosR2, setDadosR2] = useState<RelatorioRadar[]>([]);
   const [dadosR3, setDadosR3] = useState<RelatorioEvolucao[]>([]);
@@ -83,7 +79,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   const [dadosR5, setDadosR5] = useState<RelatorioRanking[]>([]);
   const [resumoPendencias, setResumoPendencias] = useState<{ concluidas: number; pendentes: number } | null>(null);
 
-  // Estados de Loading por Relatório
   const [loadingR1, setLoadingR1] = useState(false);
   const [loadingR2, setLoadingR2] = useState(false);
   const [loadingR3, setLoadingR3] = useState(false);
@@ -91,7 +86,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   const [loadingR5, setLoadingR5] = useState(false);
   const [erroRelatorios, setErroRelatorios] = useState<{ [key: string]: string }>({});
 
-  // Accordions para exibir o código SQL de cada relatório
   const [showSql, setShowSql] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
@@ -109,13 +103,11 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
       setUsuarios(listaUsr);
 
       if (listaAv.length > 0) {
-        // Seleciona a avaliação com mais dados ou a primeira (geralmente id 3 ou a primeira ativa)
         const padraoAv = listaAv.find((a) => a.idAvaliacao === 3) || listaAv[0];
         setAvaliacaoId(padraoAv.idAvaliacao);
       }
 
       if (listaUsr.length > 0) {
-        // Se currentUser existir e estiver na lista, usa ele, senão o id 2 (Carlos/Ana)
         const idPadrao = currentUser?.idUsuario || (listaUsr.length > 1 ? listaUsr[1].idUsuario : listaUsr[0].idUsuario);
         setAvaliadoId(idPadrao);
       }
@@ -126,27 +118,22 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     }
   };
 
-  // Carrega Relatório 1 quando muda avaliacaoId ou minAvaliadores
   useEffect(() => {
     if (avaliacaoId) carregarR1(Number(avaliacaoId), minAvaliadores);
   }, [avaliacaoId, minAvaliadores]);
 
-  // Carrega Relatório 2 quando muda avaliacaoId ou avaliadoId
   useEffect(() => {
     if (avaliacaoId && avaliadoId) carregarR2(Number(avaliacaoId), Number(avaliadoId));
   }, [avaliacaoId, avaliadoId]);
 
-  // Carrega Relatório 3 quando muda avaliadoId ou datas
   useEffect(() => {
     if (avaliadoId) carregarR3(Number(avaliadoId), dataInicioEvolucao, dataFimEvolucao);
   }, [avaliadoId, dataInicioEvolucao, dataFimEvolucao]);
 
-  // Carrega Relatório 4 quando muda avaliacaoId
   useEffect(() => {
     if (avaliacaoId) carregarR4(Number(avaliacaoId), departamentosPendencias);
   }, [avaliacaoId, departamentosPendencias, usuarios]);
 
-  // Carrega Relatório 5 quando muda avaliacaoId, departamento ou limite
   useEffect(() => {
     if (avaliacaoId) carregarR5(Number(avaliacaoId), departamentoRanking, limiteRanking);
   }, [avaliacaoId, departamentoRanking, limiteRanking]);
@@ -200,7 +187,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
         api.relatorios.pendencias(idAv, deps),
         api.designacoes.listar({ idAvaliacao: idAv }),
       ]);
-      // Para a rosca, considera só as designações cujo avaliador está nos departamentos filtrados
+      // rosca: só designações dos departamentos filtrados
       const depPorUsuario = new Map(usuarios.map((u) => [u.idUsuario, u.departamento]));
       const designacoes = deps.length === 0
         ? todasDesignacoes
@@ -253,16 +240,12 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     }
   };
 
-  // ==========================================
-  // CONFIGURAÇÕES DOS GRÁFICOS (CHART.JS)
-  // ==========================================
 
-  // Gráfico R1: Barras Horizontais
   const chartR1Data = {
     labels: dadosR1.map((d) => d.nome.split(' ')[0] + ' ' + (d.nome.split(' ')[1] || '')),
     datasets: [
       {
-        label: 'Média Ponderada 360°',
+        label: 'Média Ponderada AvaliaMAX',
         data: dadosR1.map((d) => d.media_ponderada),
         backgroundColor: '#2f2c79',
         hoverBackgroundColor: '#ff9800',
@@ -289,7 +272,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     },
   };
 
-  // Gráfico R2: Radar de Competências
   const chartR2Data = {
     labels: dadosR2.map((d) =>
       d.competencia.length > 25 ? d.competencia.substring(0, 25) + '...' : d.competencia
@@ -333,7 +315,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     },
   };
 
-  // Gráfico R3: Linha Temporal de Evolução
   const chartR3Data = {
     labels: dadosR3.map((d) => d.ciclo),
     datasets: [
@@ -364,7 +345,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     },
   };
 
-  // Gráfico R4 usa contagens reais das designações e respostas do ciclo selecionado.
   const totalPendentesR4 = resumoPendencias?.pendentes ?? 0;
   const totalConcluidasR4 = resumoPendencias?.concluidas ?? 0;
 
@@ -388,7 +368,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     cutout: '70%',
   };
 
-  // Gráfico R5: Barras Verticais do Ranking Top Performers
   const chartR5Data = {
     labels: dadosR5.map((d) => `#${d.posicao_ranking} ${d.nome.split(' ')[0]}`),
     datasets: [
@@ -427,7 +406,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
 
   return (
     <div className="space-y-8">
-      {/* Barra de Sumário Rápido com Âncoras (Quick Jump) */}
       <div className="sticky top-28 z-40 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-md flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <button
@@ -463,7 +441,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
         </div>
       </div>
 
-      {/* Barra Superior de Filtros Globais */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -488,7 +465,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
           </div>
         </div>
 
-        {/* Seletor de Colaborador para os Relatórios Individuais (R2 e R3) */}
         <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs">
           <span className="font-bold text-[#2f2c79] flex items-center space-x-1">
             <Users size={14} />
@@ -501,16 +477,13 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
           >
             {usuarios.map((u) => (
               <option key={u.idUsuario} value={u.idUsuario}>
-                {u.nome} — {u.cargo} ({u.departamento})
+                {u.nome} - {u.cargo} ({u.departamento})
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* =====================================================================
-          RELATÓRIO 1: Consolidado por Avaliado (Média Ponderada RF6)
-      ===================================================================== */}
       <section
         id="relatorio-1"
         className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
@@ -556,7 +529,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
           </div>
         </div>
 
-        {/* Acordeon SQL R1 */}
         {showSql['r1'] && (
           <div className="bg-[#000020] text-amber-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
             <pre>{`SELECT u.id_usuario, u.nome, u.cargo, u.departamento,
@@ -575,7 +547,6 @@ ORDER BY media_ponderada DESC;`}</pre>
           </div>
         )}
 
-        {/* Gráfico e Tabela R1 */}
         {loadingR1 ? (
           <div className="text-center py-10 text-xs text-slate-400">Carregando consolidado...</div>
         ) : erroRelatorios.r1 ? (
@@ -586,14 +557,12 @@ ORDER BY media_ponderada DESC;`}</pre>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-            {/* Gráfico de Barras Horizontais */}
             <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
               <div className="flex-1 relative">
                 <Bar data={chartR1Data} options={chartR1Options} />
               </div>
             </div>
 
-            {/* Tabela de Resultados */}
             <div className="overflow-x-auto max-h-72 overflow-y-auto border border-slate-200 rounded-xl">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">
@@ -601,7 +570,7 @@ ORDER BY media_ponderada DESC;`}</pre>
                     <th className="p-2.5">Colaborador</th>
                     <th className="p-2.5">Departamento</th>
                     <th className="p-2.5 text-center">Avaliadores</th>
-                    <th className="p-2.5 text-right">Média 360°</th>
+                    <th className="p-2.5 text-right">Média AvaliaMAX</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -628,9 +597,6 @@ ORDER BY media_ponderada DESC;`}</pre>
         )}
       </section>
 
-      {/* =====================================================================
-          RELATÓRIO 2: Radar de Competências com Comparativo da Média da Empresa
-      ===================================================================== */}
       <section
         id="relatorio-2"
         className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
@@ -663,7 +629,6 @@ ORDER BY media_ponderada DESC;`}</pre>
           </div>
         </div>
 
-        {/* Acordeon SQL R2 */}
         {showSql['r2'] && (
           <div className="bg-[#000020] text-amber-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
             <pre>{`SELECT q.id_questao, q.enunciado AS competencia, c.peso,
@@ -686,7 +651,6 @@ ORDER BY q.id_questao;`}</pre>
           </div>
         )}
 
-        {/* Gráfico e Tabela R2 */}
         {loadingR2 ? (
           <div className="text-center py-10 text-xs text-slate-400">Carregando radar...</div>
         ) : erroRelatorios.r2 ? (
@@ -697,14 +661,12 @@ ORDER BY q.id_questao;`}</pre>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-            {/* Gráfico Radar / Teia */}
             <div className="h-80 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
               <div className="flex-1 relative">
                 <Radar data={chartR2Data} options={chartR2Options} />
               </div>
             </div>
 
-            {/* Tabela de Competências */}
             <div className="overflow-x-auto max-h-80 overflow-y-auto border border-slate-200 rounded-xl">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">
@@ -754,9 +716,6 @@ ORDER BY q.id_questao;`}</pre>
         )}
       </section>
 
-      {/* =====================================================================
-          RELATÓRIO 3: Evolução Histórica entre Ciclos (Filtro Temporal)
-      ===================================================================== */}
       <section
         id="relatorio-3"
         className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
@@ -806,7 +765,6 @@ ORDER BY q.id_questao;`}</pre>
           </div>
         </div>
 
-        {/* Acordeon SQL R3 */}
         {showSql['r3'] && (
           <div className="bg-[#000020] text-amber-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
             <pre>{`SELECT a.id_avaliacao, a.titulo AS ciclo, a.data_inicio, a.data_fim,
@@ -824,7 +782,6 @@ ORDER BY a.data_inicio ASC;`}</pre>
           </div>
         )}
 
-        {/* Gráfico e Tabela R3 */}
         {loadingR3 ? (
           <div className="text-center py-10 text-xs text-slate-400">Carregando evolução histórica...</div>
         ) : erroRelatorios.r3 ? (
@@ -835,14 +792,12 @@ ORDER BY a.data_inicio ASC;`}</pre>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-            {/* Gráfico de Linha */}
             <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
               <div className="flex-1 relative">
                 <Line data={chartR3Data} options={chartR3Options} />
               </div>
             </div>
 
-            {/* Tabela Cronológica */}
             <div className="overflow-x-auto max-h-72 overflow-y-auto border border-slate-200 rounded-xl">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">
@@ -875,9 +830,6 @@ ORDER BY a.data_inicio ASC;`}</pre>
         )}
       </section>
 
-      {/* =====================================================================
-          RELATÓRIO 4: Pendências de Resposta (Quem Ainda Não Avaliou)
-      ===================================================================== */}
       <section
         id="relatorio-4"
         className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
@@ -927,7 +879,6 @@ ORDER BY a.data_inicio ASC;`}</pre>
           </div>
         </div>
 
-        {/* Acordeon SQL R4 */}
         {showSql['r4'] && (
           <div className="bg-[#000020] text-amber-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
             <pre>{`SELECT d.id_designacao, a.titulo AS avaliacao,
@@ -953,21 +904,18 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
           </div>
         )}
 
-        {/* Gráfico e Tabela R4 */}
         {loadingR4 ? (
           <div className="text-center py-10 text-xs text-slate-400">Carregando pendências...</div>
         ) : erroRelatorios.r4 ? (
           <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r4}</div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            {/* Gráfico Rosca / Donut */}
             <div className="h-64 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center items-center">
               <div className="w-44 h-44 relative">
                 <Doughnut data={chartR4Data} options={chartR4Options} />
               </div>
             </div>
 
-            {/* Tabela de Pendências */}
             <div className="lg:col-span-2 overflow-x-auto max-h-64 overflow-y-auto border border-slate-200 rounded-xl">
               {dadosR4.length === 0 ? (
                 <div className="p-8 text-center text-xs text-emerald-700 bg-emerald-50">
@@ -1011,9 +959,6 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
         )}
       </section>
 
-      {/* =====================================================================
-          RELATÓRIO 5: Ranking de Desempenho com Função de Janela (RANK())
-      ===================================================================== */}
       <section
         id="relatorio-5"
         className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
@@ -1035,7 +980,6 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs self-start md:self-auto">
-            {/* Filtro ILIKE departamento */}
             <input
               type="text"
               placeholder="Filtrar departamento..."
@@ -1044,7 +988,6 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
               className="p-1.5 rounded-xl border border-slate-300 text-xs w-44 focus:outline-none focus:ring-1 focus:ring-[#ff9800]"
             />
 
-            {/* FETCH FIRST limite */}
             <div className="flex items-center space-x-1 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-200">
               <span className="text-slate-500">Limite:</span>
               <select
@@ -1069,7 +1012,6 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
           </div>
         </div>
 
-        {/* Acordeon SQL R5 */}
         {showSql['r5'] && (
           <div className="bg-[#000020] text-amber-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
             <pre>{`SELECT
@@ -1093,7 +1035,6 @@ FETCH FIRST ${limiteRanking} ROWS ONLY;`}</pre>
           </div>
         )}
 
-        {/* Gráfico e Tabela R5 */}
         {loadingR5 ? (
           <div className="text-center py-10 text-xs text-slate-400">Carregando ranking...</div>
         ) : erroRelatorios.r5 ? (
@@ -1104,14 +1045,12 @@ FETCH FIRST ${limiteRanking} ROWS ONLY;`}</pre>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-            {/* Gráfico de Barras Verticais */}
             <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
               <div className="flex-1 relative">
                 <Bar data={chartR5Data} options={chartR5Options} />
               </div>
             </div>
 
-            {/* Tabela do Ranking com Pódio */}
             <div className="overflow-x-auto max-h-72 overflow-y-auto border border-slate-200 rounded-xl">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">

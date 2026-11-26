@@ -24,7 +24,7 @@ public class AvaliacaoController {
         this.composicaoService = composicaoService;
     }
 
-    // ===== CRUD Avaliação (RF2) =====
+    // CRUD Avaliação
 
     @GetMapping
     public List<Avaliacao> listarTodas() {
@@ -52,7 +52,7 @@ public class AvaliacaoController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== Montagem da Avaliação com Questões e Pesos (RF3 + RF6) =====
+    // Montagem da Avaliação com Questões e Pesos
 
     @GetMapping("/{id}/questoes")
     public List<Composicao> listarQuestoes(@PathVariable Integer id) {
