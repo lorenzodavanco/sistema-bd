@@ -1,6 +1,7 @@
 package com.example.sistemabd.service;
 
 import com.example.sistemabd.dao.AvaliacaoDAO;
+import com.example.sistemabd.exception.BadRequestException;
 import com.example.sistemabd.exception.ResourceNotFoundException;
 import com.example.sistemabd.model.Avaliacao;
 import org.springframework.stereotype.Service;
@@ -26,11 +27,13 @@ public class AvaliacaoService {
     }
 
     public Avaliacao criar(Avaliacao avaliacao) {
+        validarDatas(avaliacao);
         return avaliacaoDAO.save(avaliacao);
     }
 
     public Avaliacao atualizar(Integer id, Avaliacao avaliacao) {
         buscarPorId(id);
+        validarDatas(avaliacao);
         avaliacao.setIdAvaliacao(id);
         avaliacaoDAO.update(avaliacao);
         return avaliacao;
@@ -39,5 +42,15 @@ public class AvaliacaoService {
     public void deletar(Integer id) {
         buscarPorId(id);
         avaliacaoDAO.deleteById(id);
+    }
+
+    /** Mesma regra do CHECK (data_fim >= data_inicio) da tabela AVALIACAO. */
+    private void validarDatas(Avaliacao avaliacao) {
+        if (avaliacao.getDataInicio() == null || avaliacao.getDataFim() == null) {
+            throw new BadRequestException("Data de início e data de fim são obrigatórias.");
+        }
+        if (avaliacao.getDataFim().isBefore(avaliacao.getDataInicio())) {
+            throw new BadRequestException("A data de fim não pode ser anterior à data de início.");
+        }
     }
 }

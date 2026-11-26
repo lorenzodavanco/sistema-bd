@@ -11,13 +11,15 @@ CREATE TABLE AVALIACAO (
     titulo VARCHAR(100) NOT NULL,
     descricao TEXT,
     data_inicio DATE NOT NULL,
-    data_fim DATE NOT NULL
+    data_fim DATE NOT NULL,
+    CHECK (data_fim >= data_inicio)
 );
 
 CREATE TABLE QUESTAO (
     id_questao SERIAL PRIMARY KEY,
     enunciado TEXT NOT NULL,
-    tipo_questao VARCHAR(20) NOT NULL
+    tipo_questao VARCHAR(20) NOT NULL,
+    CHECK (tipo_questao IN ('MULTIPLA_ESCOLHA', 'TEXTO_LIVRE'))
 );
 
 CREATE TABLE ALTERNATIVA (
@@ -31,7 +33,7 @@ CREATE TABLE ALTERNATIVA (
 CREATE TABLE COMPOSICAO (
     id_avaliacao INT NOT NULL,
     id_questao INT NOT NULL,
-    peso NUMERIC(5,2) NOT NULL DEFAULT 1.00,
+    peso NUMERIC(5,2) NOT NULL DEFAULT 1.00 CHECK (peso > 0),
     PRIMARY KEY (id_avaliacao, id_questao),
     FOREIGN KEY (id_avaliacao) REFERENCES AVALIACAO (id_avaliacao) ON DELETE CASCADE,
     FOREIGN KEY (id_questao) REFERENCES QUESTAO (id_questao) ON DELETE CASCADE
