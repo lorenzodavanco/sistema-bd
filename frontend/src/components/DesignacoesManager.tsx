@@ -10,7 +10,6 @@ import {
   X,
   Filter,
   ArrowRight,
-  ShieldCheck,
 } from 'lucide-react';
 import type { Designacao, Avaliacao, Usuario } from '../types';
 import { api } from '../services/api';
@@ -30,7 +29,7 @@ export const DesignacoesManager: React.FC = () => {
   const [filtroStatus, setFiltroStatus] = useState<'TODOS' | 'RESPONDIDAS' | 'PENDENTES'>('TODOS');
   const [busca, setBusca] = useState('');
 
-  // Modal de Criação (RF4)
+  // Modal de Criação
   const [modalAberto, setModalAberto] = useState(false);
   const [novaAvaliacaoId, setNovaAvaliacaoId] = useState<number | ''>('');
   const [novoAvaliadorId, setNovoAvaliadorId] = useState<number | ''>('');
@@ -106,7 +105,7 @@ export const DesignacoesManager: React.FC = () => {
 
       setFeedback({
         tipo: 'sucesso',
-        texto: 'Designação 360° atribuída com sucesso! (RF4)',
+        texto: 'Designação 360° atribuída com sucesso!',
       });
 
       setModalAberto(false);
@@ -178,12 +177,6 @@ export const DesignacoesManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
-            <span
-              className="px-2.5 py-0.5 rounded-full text-xs font-bold text-[#000020]"
-              style={{ backgroundColor: '#ffcc50' }}
-            >
-              RF4 • Matriz de Designações 360°
-            </span>
             <span className="text-xs text-slate-500 font-semibold">
               Total: {designacoes.length} vínculos
             </span>
@@ -191,9 +184,6 @@ export const DesignacoesManager: React.FC = () => {
           <h2 className="text-xl font-extrabold text-[#171a4a] mt-1">
             Designações de Avaliadores & Avaliados
           </h2>
-          <p className="text-xs text-slate-500">
-            Defina quem deve avaliar quem em cada ciclo de avaliação com garantia de unicidade (RF4 & RF6).
-          </p>
         </div>
 
         <button
@@ -446,7 +436,7 @@ export const DesignacoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Criação (RF4) */}
+      {/* Modal de Criação */}
       {modalAberto && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200">
@@ -456,7 +446,7 @@ export const DesignacoesManager: React.FC = () => {
             >
               <div className="flex items-center space-x-2">
                 <UserCheck size={20} style={{ color: '#ffcc50' }} />
-                <h3 className="font-bold text-base">Nova Designação 360° (RF4)</h3>
+                <h3 className="font-bold text-base">Nova Designação 360°</h3>
               </div>
               <button
                 onClick={() => setModalAberto(false)}
@@ -522,18 +512,6 @@ export const DesignacoesManager: React.FC = () => {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Alerta de Restrição UNIQUE */}
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start space-x-2">
-                <ShieldCheck size={16} className="text-[#2f2c79] shrink-0 mt-0.5" />
-                <span>
-                  <strong>Garantia do Banco:</strong> A restrição{' '}
-                  <code className="font-mono text-[11px] bg-white px-1 py-0.5 rounded border border-slate-200">
-                    UNIQUE(id_avaliacao, id_avaliador, id_avaliado)
-                  </code>{' '}
-                  assegura que um mesmo avaliador avalie o mesmo colega no máximo uma vez neste ciclo.
-                </span>
               </div>
 
               {/* Botões */}

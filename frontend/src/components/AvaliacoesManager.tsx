@@ -9,8 +9,6 @@ import {
   AlertCircle,
   X,
   Layers,
-  Sparkles,
-  Info,
   Check,
 } from 'lucide-react';
 import type { Avaliacao, Questao } from '../types';
@@ -22,7 +20,7 @@ export const AvaliacoesManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(null);
 
-  // Modal de Criação / Edição de Avaliação (RF2)
+  // Modal de Criação / Edição de Avaliação
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [titulo, setTitulo] = useState('');
@@ -31,7 +29,7 @@ export const AvaliacoesManager: React.FC = () => {
   const [dataFim, setDataFim] = useState('');
   const [salvandoAvaliacao, setSalvandoAvaliacao] = useState(false);
 
-  // Modal / Drawer de Montagem da Composição com Pesos (RF3 + RF6)
+  // Modal / Drawer de Montagem da Composição com Pesos
   const [composicaoModalAberta, setComposicaoModalAberta] = useState(false);
   const [avaliacaoSelecionada, setAvaliacaoSelecionada] = useState<Avaliacao | null>(null);
   const [composicaoAtual, setComposicaoAtual] = useState<Map<number, number>>(new Map()); // idQuestao -> peso
@@ -152,7 +150,7 @@ export const AvaliacoesManager: React.FC = () => {
     }
   };
 
-  // Abrir Modal de Composição com Pesos (RF3 + RF6)
+  // Abrir Modal de Composição com Pesos
   const abrirModalComposicao = async (av: Avaliacao) => {
     setAvaliacaoSelecionada(av);
     setCarregandoComposicao(true);
@@ -204,15 +202,16 @@ export const AvaliacoesManager: React.FC = () => {
 
     setSalvandoComposicao(true);
     try {
+      // Texto livre não entra na média ponderada: grava sempre peso 1.00
       const listaPayload = Array.from(composicaoAtual.entries()).map(([idQuestao, peso]) => ({
         idQuestao,
-        peso,
+        peso: ehTextoLivre(idQuestao) ? 1.0 : peso,
       }));
 
       await api.avaliacoes.salvarComposicao(avaliacaoSelecionada.idAvaliacao, listaPayload);
       setFeedback({
         tipo: 'sucesso',
-        texto: `Composição e pesos da avaliação "${avaliacaoSelecionada.titulo}" atualizados com sucesso! (RF3 + RF6)`,
+        texto: `Composição e pesos da avaliação "${avaliacaoSelecionada.titulo}" atualizados com sucesso!`,
       });
 
       setComposicaoModalAberta(false);
@@ -225,7 +224,12 @@ export const AvaliacoesManager: React.FC = () => {
   };
 
   // Cálculo da soma dos pesos para exibir percentual de cada competência
-  const somaTotalPesos = Array.from(composicaoAtual.values()).reduce((acc, p) => acc + p, 0);
+  const ehTextoLivre = (idQuestao: number) =>
+    todasQuestoes.find((q) => q.idQuestao === idQuestao)?.tipoQuestao === 'TEXTO_LIVRE';
+
+  const somaTotalPesos = Array.from(composicaoAtual.entries())
+    .filter(([idQuestao]) => !ehTextoLivre(idQuestao))
+    .reduce((acc, [, p]) => acc + p, 0);
 
   const getStatusCiclo = (inicio: string, fim: string) => {
     const hoje = new Date().toISOString().split('T')[0];
@@ -244,12 +248,6 @@ export const AvaliacoesManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
-            <span
-              className="px-2.5 py-0.5 rounded-full text-xs font-bold text-[#000020]"
-              style={{ backgroundColor: '#ffcc50' }}
-            >
-              RF2, RF3 & RF6 • Ciclos & Pesos
-            </span>
             <span className="text-xs text-slate-500 font-semibold">
               Total: {avaliacoes.length} ciclos
             </span>
@@ -257,9 +255,6 @@ export const AvaliacoesManager: React.FC = () => {
           <h2 className="text-xl font-extrabold text-[#171a4a] mt-1">
             Ciclos de Avaliação & Composição Ponderada
           </h2>
-          <p className="text-xs text-slate-500">
-            Cadastre os períodos de avaliação e monte a composição de critérios com pesos diferenciados (RF6).
-          </p>
         </div>
 
         <button
@@ -290,14 +285,6 @@ export const AvaliacoesManager: React.FC = () => {
           </button>
         </div>
       )}
-
-      {/* Card explicativo do RF6 */}
-      <div className="bg-[#2f2c79]/5 border border-[#2f2c79]/20 rounded-2xl p-4 flex items-start space-x-3">
-        <Sparkles size={20} className="text-[#ff9800] shrink-0 mt-0.5" />
-        <div className="text-xs text-[#000020] leading-relaxed">
-          <span className="font-bold text-[#2f2c79]">Particularidade Implementada (RF6):</span> Em cada ciclo de avaliação 360°, cada critério possui um **peso ponderado** customizável na tabela <code className="bg-white px-1 py-0.5 rounded text-[11px] font-mono border border-slate-200">COMPOSICAO(peso)</code>. Isso permite atribuir maior relevância às competências estratégicas do ciclo, impactando os 5 relatórios através do cálculo SQL <code className="bg-white px-1 py-0.5 rounded text-[11px] font-mono border border-slate-200">SUM(resposta * peso) / SUM(peso)</code>.
-        </div>
-      </div>
 
       {/* Lista de Avaliações */}
       {loading ? (
@@ -376,7 +363,7 @@ export const AvaliacoesManager: React.FC = () => {
                     style={{ backgroundColor: '#2f2c79' }}
                   >
                     <Sliders size={14} style={{ color: '#ffcc50' }} />
-                    <span>Montar Composição & Pesos (RF3/RF6)</span>
+                    <span>Montar Composição & Pesos</span>
                   </button>
                 </div>
               </div>
@@ -385,7 +372,7 @@ export const AvaliacoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Modal Criar / Editar Avaliação (RF2) */}
+      {/* Modal Criar / Editar Avaliação */}
       {modalAvaliacaoAberto && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-200">
@@ -396,7 +383,7 @@ export const AvaliacoesManager: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Calendar size={20} style={{ color: '#ffcc50' }} />
                 <h3 className="font-bold text-base">
-                  {editandoId ? `Editar Avaliação #${editandoId}` : 'Novo Ciclo de Avaliação (RF2)'}
+                  {editandoId ? `Editar Avaliação #${editandoId}` : 'Novo Ciclo de Avaliação'}
                 </h3>
               </div>
               <button
@@ -486,7 +473,7 @@ export const AvaliacoesManager: React.FC = () => {
         </div>
       )}
 
-      {/* Modal / Drawer de Montagem de Composição e Pesos (RF3 + RF6) */}
+      {/* Modal / Drawer de Montagem de Composição e Pesos */}
       {composicaoModalAberta && avaliacaoSelecionada && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-slate-200">
@@ -499,7 +486,7 @@ export const AvaliacoesManager: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <Sliders size={20} style={{ color: '#ffcc50' }} />
                   <h3 className="font-bold text-base">
-                    Composição & Pesos (RF3 + RF6)
+                    Composição & Pesos
                   </h3>
                 </div>
                 <p className="text-xs text-slate-300 mt-0.5">
@@ -528,10 +515,6 @@ export const AvaliacoesManager: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-1.5 text-[11px] text-slate-500">
-                <Info size={13} className="text-[#ff9800]" />
-                <span>Marque as questões que compõem o ciclo e ajuste seus respectivos pesos.</span>
-              </div>
             </div>
 
             {/* Conteúdo com scroll: lista de questões */}
@@ -542,7 +525,7 @@ export const AvaliacoesManager: React.FC = () => {
                 </div>
               ) : todasQuestoes.length === 0 ? (
                 <div className="text-center py-8 text-sm text-slate-500">
-                  Nenhuma questão disponível no banco. Cadastre questões no módulo de Questões (RF1).
+                  Nenhuma questão disponível no banco. Cadastre questões no módulo de Questões.
                 </div>
               ) : (
                 todasQuestoes.map((q) => {
@@ -599,12 +582,12 @@ export const AvaliacoesManager: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Controle de Peso (RF6) */}
-                      {isChecked && (
+                      {/* Controle de Peso */}
+                      {isChecked && q.tipoQuestao === 'MULTIPLA_ESCOLHA' && (
                         <div className="flex items-center space-x-3 self-end sm:self-center shrink-0 bg-white p-2 rounded-xl border border-slate-200">
                           <div className="text-right">
                             <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                              Peso (RF6)
+                              Peso
                             </span>
                             {percentual && (
                               <span className="text-[10px] font-bold text-[#ff9800]">
@@ -649,9 +632,7 @@ export const AvaliacoesManager: React.FC = () => {
 
             {/* Rodapé do Modal */}
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between rounded-b-2xl shrink-0">
-              <span className="text-xs text-slate-500">
-                Operação gravada em transação atômica no PostgreSQL.
-              </span>
+              <span />
 
               <div className="flex items-center space-x-3">
                 <button

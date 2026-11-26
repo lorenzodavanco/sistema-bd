@@ -205,12 +205,6 @@ export const QuestoesManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
-            <span
-              className="px-2.5 py-0.5 rounded-full text-xs font-bold text-[#000020]"
-              style={{ backgroundColor: '#ffcc50' }}
-            >
-              RF1 • Banco de Questões
-            </span>
             <span className="text-xs text-slate-500 font-semibold">
               Total: {questoes.length} cadastradas
             </span>
@@ -218,9 +212,6 @@ export const QuestoesManager: React.FC = () => {
           <h2 className="text-xl font-extrabold text-[#171a4a] mt-1">
             Gestão de Questões & Competências
           </h2>
-          <p className="text-xs text-slate-500">
-            Crie questões com alternativas ponderadas ou textos livres para compor os ciclos 360°.
-          </p>
         </div>
 
         <button
@@ -355,7 +346,7 @@ export const QuestoesManager: React.FC = () => {
                 {isMultipla && isOpen && (
                   <div className="bg-slate-50/80 px-5 py-3 border-t border-slate-100">
                     <h5 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                      Alternativas Cadastradas (Escala):
+                      Alternativas
                     </h5>
                     {loadingAlternativas[q.idQuestao] ? (
                       <p className="text-xs text-slate-400">Carregando alternativas...</p>
@@ -398,7 +389,7 @@ export const QuestoesManager: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <HelpCircle size={20} style={{ color: '#ffcc50' }} />
                 <h3 className="font-bold text-base">
-                  {editandoId ? `Editar Questão #${editandoId}` : 'Nova Questão (RF1)'}
+                  {editandoId ? `Editar Questão #${editandoId}` : 'Nova Questão'}
                 </h3>
               </div>
               <button

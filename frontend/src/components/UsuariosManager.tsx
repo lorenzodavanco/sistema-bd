@@ -142,12 +142,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
-            <span
-              className="px-2.5 py-0.5 rounded-full text-xs font-bold text-[#000020]"
-              style={{ backgroundColor: '#ffcc50' }}
-            >
-              Colaboradores & Participantes
-            </span>
             <span className="text-xs text-slate-500 font-semibold">
               Total: {usuarios.length} registrados
             </span>
@@ -155,9 +149,6 @@ export const UsuariosManager: React.FC<UsuariosManagerProps> = ({ onRefreshUsuar
           <h2 className="text-xl font-extrabold text-[#171a4a] mt-1">
             Gestão de Usuários
           </h2>
-          <p className="text-xs text-slate-500">
-            Gerencie os colaboradores da organização que participam dos ciclos de avaliação 360°.
-          </p>
         </div>
 
         <button

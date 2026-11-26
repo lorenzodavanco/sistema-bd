@@ -47,7 +47,7 @@ O modelo relacional do Sistema de Avaliação 360° encontra-se rigorosamente na
      é simples (coluna única gerada por SERIAL), satisfazendo a 2FN por definição.
 
 3. Terceira Forma Normal (3FN):
-   - O esquema atende integralmente à 2FN.
+   - O esquema atende integralmente à 3FN.
    - Não existem dependências funcionais transitivas entre atributos não-chave.
    - Em todas as tabelas, cada atributo não-chave depende exclusivamente e diretamente da chave
      primária da sua respectiva tabela (depende da chave, de toda a chave e de nada além da chave).

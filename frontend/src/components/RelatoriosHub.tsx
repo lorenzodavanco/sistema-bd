@@ -73,6 +73,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   const [dataFimEvolucao, setDataFimEvolucao] = useState<string>('2026-12-31');
   const [departamentoRanking, setDepartamentoRanking] = useState<string>('');
   const [limiteRanking, setLimiteRanking] = useState<number>(10);
+  const [departamentosPendencias, setDepartamentosPendencias] = useState<string[]>([]);
 
   // Dados dos 5 Relatórios
   const [dadosR1, setDadosR1] = useState<RelatorioConsolidado[]>([]);
@@ -80,6 +81,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   const [dadosR3, setDadosR3] = useState<RelatorioEvolucao[]>([]);
   const [dadosR4, setDadosR4] = useState<RelatorioPendencia[]>([]);
   const [dadosR5, setDadosR5] = useState<RelatorioRanking[]>([]);
+  const [resumoPendencias, setResumoPendencias] = useState<{ concluidas: number; pendentes: number } | null>(null);
 
   // Estados de Loading por Relatório
   const [loadingR1, setLoadingR1] = useState(false);
@@ -87,6 +89,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   const [loadingR3, setLoadingR3] = useState(false);
   const [loadingR4, setLoadingR4] = useState(false);
   const [loadingR5, setLoadingR5] = useState(false);
+  const [erroRelatorios, setErroRelatorios] = useState<{ [key: string]: string }>({});
 
   // Accordions para exibir o código SQL de cada relatório
   const [showSql, setShowSql] = useState<{ [key: string]: boolean }>({});
@@ -140,8 +143,8 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
 
   // Carrega Relatório 4 quando muda avaliacaoId
   useEffect(() => {
-    if (avaliacaoId) carregarR4(Number(avaliacaoId));
-  }, [avaliacaoId]);
+    if (avaliacaoId) carregarR4(Number(avaliacaoId), departamentosPendencias);
+  }, [avaliacaoId, departamentosPendencias, usuarios]);
 
   // Carrega Relatório 5 quando muda avaliacaoId, departamento ou limite
   useEffect(() => {
@@ -153,8 +156,10 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     try {
       const res = await api.relatorios.consolidado(idAv, minAv);
       setDadosR1(res);
+      setErroRelatorios((prev) => ({ ...prev, r1: '' }));
     } catch (e) {
       console.error(e);
+      setErroRelatorios((prev) => ({ ...prev, r1: 'Não foi possível carregar o consolidado. Verifique a conexão com a API.' }));
     } finally {
       setLoadingR1(false);
     }
@@ -165,8 +170,10 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     try {
       const res = await api.relatorios.competencias(idAv, idUsr);
       setDadosR2(res);
+      setErroRelatorios((prev) => ({ ...prev, r2: '' }));
     } catch (e) {
       console.error(e);
+      setErroRelatorios((prev) => ({ ...prev, r2: 'Não foi possível carregar o radar. Verifique a conexão com a API.' }));
     } finally {
       setLoadingR2(false);
     }
@@ -177,20 +184,37 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     try {
       const res = await api.relatorios.evolucao(idUsr, dtInicio, dtFim);
       setDadosR3(res);
+      setErroRelatorios((prev) => ({ ...prev, r3: '' }));
     } catch (e) {
       console.error(e);
+      setErroRelatorios((prev) => ({ ...prev, r3: 'Não foi possível carregar a evolução. Verifique a conexão com a API.' }));
     } finally {
       setLoadingR3(false);
     }
   };
 
-  const carregarR4 = async (idAv: number) => {
+  const carregarR4 = async (idAv: number, deps: string[]) => {
     setLoadingR4(true);
     try {
-      const res = await api.relatorios.pendencias(idAv);
-      setDadosR4(res);
+      const [pendencias, todasDesignacoes] = await Promise.all([
+        api.relatorios.pendencias(idAv, deps),
+        api.designacoes.listar({ idAvaliacao: idAv }),
+      ]);
+      // Para a rosca, considera só as designações cujo avaliador está nos departamentos filtrados
+      const depPorUsuario = new Map(usuarios.map((u) => [u.idUsuario, u.departamento]));
+      const designacoes = deps.length === 0
+        ? todasDesignacoes
+        : todasDesignacoes.filter((d) => deps.includes(depPorUsuario.get(d.idAvaliador) ?? ''));
+      setDadosR4(pendencias);
+      setResumoPendencias({
+        concluidas: Math.max(0, designacoes.length - pendencias.length),
+        pendentes: pendencias.length,
+      });
+      setErroRelatorios((prev) => ({ ...prev, r4: '' }));
     } catch (e) {
       console.error(e);
+      setResumoPendencias(null);
+      setErroRelatorios((prev) => ({ ...prev, r4: 'Não foi possível carregar o status das designações. Verifique a conexão com a API.' }));
     } finally {
       setLoadingR4(false);
     }
@@ -201,11 +225,21 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     try {
       const res = await api.relatorios.ranking(idAv, dept || undefined, lim);
       setDadosR5(res);
+      setErroRelatorios((prev) => ({ ...prev, r5: '' }));
     } catch (e) {
       console.error(e);
+      setErroRelatorios((prev) => ({ ...prev, r5: 'Não foi possível carregar o ranking. Verifique a conexão com a API.' }));
     } finally {
       setLoadingR5(false);
     }
+  };
+
+  const departamentosDisponiveis = Array.from(new Set(usuarios.map((u) => u.departamento))).sort();
+
+  const toggleDepartamentoPendencias = (dep: string) => {
+    setDepartamentosPendencias((prev) =>
+      prev.includes(dep) ? prev.filter((d) => d !== dep) : [...prev, dep]
+    );
   };
 
   const toggleSql = (key: string) => {
@@ -330,11 +364,9 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     },
   };
 
-  // Gráfico R4: Rosca de Pendências vs Concluídas
-  // Calcula concluídas aproximadas a partir do total de respostas dos outros relatórios
-  const totalPendentesR4 = dadosR4.length;
-  // estimativa de concluídas no ciclo para o gráfico de rosca
-  const totalConcluidasR4 = Math.max(1, (dadosR1.reduce((acc, i) => acc + i.total_respostas_computadas, 0) / 4) | 0);
+  // Gráfico R4 usa contagens reais das designações e respostas do ciclo selecionado.
+  const totalPendentesR4 = resumoPendencias?.pendentes ?? 0;
+  const totalConcluidasR4 = resumoPendencias?.concluidas ?? 0;
 
   const chartR4Data = {
     labels: ['Concluídas', 'Pendentes'],
@@ -387,7 +419,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
     return (
       <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center shadow-sm">
         <div className="text-sm font-semibold text-slate-500">
-          Carregando dados analíticos e consultas SQL...
+          Carregando relatórios...
         </div>
       </div>
     );
@@ -396,19 +428,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   return (
     <div className="space-y-8">
       {/* Barra de Sumário Rápido com Âncoras (Quick Jump) */}
-      <div className="sticky top-28 z-40 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-md flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center space-x-2">
-          <span
-            className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs text-[#000020]"
-            style={{ backgroundColor: '#ffcc50' }}
-          >
-            RF7
-          </span>
-          <span className="text-xs font-bold text-[#171a4a] hidden sm:inline">
-            Sumário dos 5 Relatórios SQL:
-          </span>
-        </div>
-
+      <div className="sticky top-28 z-40 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-md flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <button
             onClick={() => scrollToSection('relatorio-1')}
@@ -448,15 +468,12 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-extrabold text-[#171a4a]">
-              Painel Analítico de Relatórios (RF7)
+              Relatórios
             </h2>
-            <p className="text-xs text-slate-500">
-              Visualização contínua com tabelas e gráficos Chart.js cobrindo 100% dos recursos SQL exigidos na Seção 5.
-            </p>
           </div>
 
           <div className="flex items-center space-x-2 text-xs">
-            <span className="font-semibold text-slate-600">Ciclo Ativo:</span>
+            <span className="font-semibold text-slate-600">Ciclo:</span>
             <select
               value={avaliacaoId}
               onChange={(e) => setAvaliacaoId(Number(e.target.value))}
@@ -475,7 +492,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
         <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs">
           <span className="font-bold text-[#2f2c79] flex items-center space-x-1">
             <Users size={14} />
-            <span>Colaborador em Foco (Para Radar e Evolução):</span>
+            <span>Colaborador (Radar e Evolução):</span>
           </span>
           <select
             value={avaliadoId}
@@ -507,22 +524,11 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
               >
                 Relatório 1
               </span>
-              <span className="text-[11px] font-semibold text-slate-400">
-                Média Ponderada 360° com Pesos Diferenciados
-              </span>
             </div>
             <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
               <BarChart3 size={20} className="text-[#2f2c79]" />
               <span>Resultado Consolidado por Avaliado</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Recursos: <code className="font-mono text-[#2f2c79]">JOIN</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">SUM() ponderada</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">COUNT(DISTINCT)</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">GROUP BY</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">HAVING</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">ORDER BY</code>.
-            </p>
           </div>
 
           <div className="flex items-center space-x-3 text-xs self-start md:self-auto">
@@ -571,7 +577,9 @@ ORDER BY media_ponderada DESC;`}</pre>
 
         {/* Gráfico e Tabela R1 */}
         {loadingR1 ? (
-          <div className="text-center py-10 text-xs text-slate-400">Carregando relatório consolidado...</div>
+          <div className="text-center py-10 text-xs text-slate-400">Carregando consolidado...</div>
+        ) : erroRelatorios.r1 ? (
+          <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r1}</div>
         ) : dadosR1.length === 0 ? (
           <div className="text-center py-8 text-xs text-slate-400">
             Nenhuma resposta computada para este ciclo com o corte mínimo de {minAvaliadores} avaliadores.
@@ -580,9 +588,6 @@ ORDER BY media_ponderada DESC;`}</pre>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
             {/* Gráfico de Barras Horizontais */}
             <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                Gráfico de Barras Horizontais (Maior para Menor Média)
-              </h4>
               <div className="flex-1 relative">
                 <Bar data={chartR1Data} options={chartR1Options} />
               </div>
@@ -639,23 +644,11 @@ ORDER BY media_ponderada DESC;`}</pre>
               >
                 Relatório 2
               </span>
-              <span className="text-[11px] font-semibold text-slate-400">
-                Desempenho por Competência vs Média Corporativa
-              </span>
             </div>
             <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
               <RadarIcon size={20} className="text-[#ff9800]" />
-              <span>Radar de Competências com Comparativo Geral da Empresa</span>
+              <span>Radar de Competências</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Recursos: <code className="font-mono text-[#2f2c79]">JOIN</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">AVG()</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">GROUP BY</code>,{' '}
-              <span className="bg-amber-100 font-bold text-amber-900 px-1 rounded">
-                Subconsulta Correlacionada no SELECT
-              </span>
-              , <code className="font-mono text-[#2f2c79]">ORDER BY</code>.
-            </p>
           </div>
 
           <div className="flex items-center space-x-2 text-xs self-start md:self-auto">
@@ -695,7 +688,9 @@ ORDER BY q.id_questao;`}</pre>
 
         {/* Gráfico e Tabela R2 */}
         {loadingR2 ? (
-          <div className="text-center py-10 text-xs text-slate-400">Carregando comparativo radar...</div>
+          <div className="text-center py-10 text-xs text-slate-400">Carregando radar...</div>
+        ) : erroRelatorios.r2 ? (
+          <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r2}</div>
         ) : dadosR2.length === 0 ? (
           <div className="text-center py-8 text-xs text-slate-400">
             Nenhuma resposta encontrada para o colaborador selecionado neste ciclo.
@@ -704,9 +699,6 @@ ORDER BY q.id_questao;`}</pre>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
             {/* Gráfico Radar / Teia */}
             <div className="h-80 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 text-center">
-                Gráfico Radar (Avaliado vs Média da Empresa)
-              </h4>
               <div className="flex-1 relative">
                 <Radar data={chartR2Data} options={chartR2Options} />
               </div>
@@ -717,7 +709,7 @@ ORDER BY q.id_questao;`}</pre>
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">
                   <tr>
-                    <th className="p-2.5">Competência / Critério</th>
+                    <th className="p-2.5">Competência</th>
                     <th className="p-2.5 text-center">Peso</th>
                     <th className="p-2.5 text-right text-[#ffcc50]">Nota Avaliado</th>
                     <th className="p-2.5 text-right text-indigo-200">Média Empresa</th>
@@ -728,17 +720,7 @@ ORDER BY q.id_questao;`}</pre>
                     const diff = item.media_avaliado - item.media_geral_empresa;
                     const diffPositiva = diff >= 0;
 
-                    if (loadingBase) {
-    return (
-      <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center shadow-sm">
-        <div className="text-sm font-semibold text-slate-500">
-          Carregando dados analíticos e consultas SQL...
-        </div>
-      </div>
-    );
-  }
-
-  return (
+                    return (
                       <tr key={item.id_questao} className="hover:bg-slate-50 transition">
                         <td className="p-2.5 font-semibold text-[#171a4a]">
                           {item.competencia}
@@ -788,24 +770,11 @@ ORDER BY q.id_questao;`}</pre>
               >
                 Relatório 3
               </span>
-              <span className="text-[11px] font-semibold text-slate-400">
-                Acompanhamento Longitudinal Semestral
-              </span>
             </div>
             <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
               <TrendingUp size={20} className="text-[#2f2c79]" />
-              <span>Evolução Histórica entre Ciclos (com Filtro Temporal)</span>
+              <span>Evolução entre Ciclos</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Recursos: <code className="font-mono text-[#2f2c79]">JOIN</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">SUM()</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">COUNT()</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">GROUP BY</code>,{' '}
-              <span className="bg-amber-100 font-bold text-amber-900 px-1 rounded">
-                WHERE com Faixa de Datas
-              </span>
-              , <code className="font-mono text-[#2f2c79]">ORDER BY a.data_inicio ASC</code>.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs self-start md:self-auto">
@@ -858,6 +827,8 @@ ORDER BY a.data_inicio ASC;`}</pre>
         {/* Gráfico e Tabela R3 */}
         {loadingR3 ? (
           <div className="text-center py-10 text-xs text-slate-400">Carregando evolução histórica...</div>
+        ) : erroRelatorios.r3 ? (
+          <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r3}</div>
         ) : dadosR3.length === 0 ? (
           <div className="text-center py-8 text-xs text-slate-400">
             Nenhuma avaliação encontrada para o colaborador nesta faixa temporal.
@@ -866,9 +837,6 @@ ORDER BY a.data_inicio ASC;`}</pre>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
             {/* Gráfico de Linha */}
             <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                Gráfico de Linha Cronológica (Progressão de Notas)
-              </h4>
               <div className="flex-1 relative">
                 <Line data={chartR3Data} options={chartR3Options} />
               </div>
@@ -923,28 +891,31 @@ ORDER BY a.data_inicio ASC;`}</pre>
               >
                 Relatório 4
               </span>
-              <span className="text-[11px] font-semibold text-slate-400">
-                Auditoria e Acompanhamento de Respostas Faltantes
-              </span>
             </div>
             <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
               <AlertTriangle size={20} className="text-[#ff9800]" />
-              <span>Pendências de Resposta (Quem Ainda Não Avaliou)</span>
+              <span>Pendências de Resposta</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Recursos:{' '}
-              <span className="bg-amber-100 font-bold text-amber-900 px-1 rounded">
-                Junção Externa (LEFT JOIN com RESPOSTA)
-              </span>
-              , <code className="font-mono text-[#2f2c79]">GROUP BY</code>,{' '}
-              <span className="bg-amber-100 font-bold text-amber-900 px-1 rounded">
-                HAVING COUNT(r.id_resposta) = 0
-              </span>
-              , <code className="font-mono text-[#2f2c79]">ORDER BY</code>.
-            </p>
           </div>
 
-          <div className="flex items-center space-x-2 text-xs self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs self-start md:self-auto">
+            <Filter size={13} className="text-slate-400" />
+            {departamentosDisponiveis.map((dep) => {
+              const ativo = departamentosPendencias.includes(dep);
+              return (
+                <button
+                  key={dep}
+                  onClick={() => toggleDepartamentoPendencias(dep)}
+                  className={`px-2.5 py-1 rounded-lg border transition cursor-pointer ${
+                    ativo
+                      ? 'bg-[#2f2c79] text-white border-[#2f2c79] font-semibold'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  {dep}
+                </button>
+              );
+            })}
             <button
               onClick={() => toggleSql('r4')}
               className="flex items-center space-x-1 px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
@@ -969,7 +940,11 @@ JOIN AVALIACAO a ON d.id_avaliacao = a.id_avaliacao
 JOIN USUARIO u_avaliador ON d.id_avaliador = u_avaliador.id_usuario
 JOIN USUARIO u_avaliado ON d.id_avaliado = u_avaliado.id_usuario
 LEFT JOIN RESPOSTA r ON d.id_designacao = r.id_designacao
-WHERE d.id_avaliacao = ${avaliacaoId}
+WHERE d.id_avaliacao = ${avaliacaoId}${
+  departamentosPendencias.length > 0
+    ? `\n  AND u_avaliador.departamento IN (${departamentosPendencias.map((d) => `'${d}'`).join(', ')})`
+    : ''
+}
 GROUP BY d.id_designacao, a.titulo, u_avaliador.id_usuario, u_avaliador.nome,
   u_avaliador.email, u_avaliador.departamento, u_avaliado.id_usuario,
   u_avaliado.nome, u_avaliado.cargo, u_avaliado.departamento
@@ -980,14 +955,13 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
 
         {/* Gráfico e Tabela R4 */}
         {loadingR4 ? (
-          <div className="text-center py-10 text-xs text-slate-400">Verificando pendências no banco...</div>
+          <div className="text-center py-10 text-xs text-slate-400">Carregando pendências...</div>
+        ) : erroRelatorios.r4 ? (
+          <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r4}</div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
             {/* Gráfico Rosca / Donut */}
             <div className="h-64 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center items-center">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                Proporção Concluídas vs Pendentes
-              </h4>
               <div className="w-44 h-44 relative">
                 <Doughnut data={chartR4Data} options={chartR4Options} />
               </div>
@@ -998,14 +972,13 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
               {dadosR4.length === 0 ? (
                 <div className="p-8 text-center text-xs text-emerald-700 bg-emerald-50">
                   <CheckCircle2 size={24} className="mx-auto mb-1 text-emerald-600" />
-                  <strong>Parabéns! Nenhuma pendência encontrada.</strong>
-                  <p className="text-slate-500 mt-0.5">Todos os avaliadores designados já responderam suas avaliações.</p>
+                  <strong>Nenhuma pendência encontrada.</strong>
                 </div>
               ) : (
                 <table className="w-full text-left text-xs">
                   <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">
                     <tr>
-                      <th className="p-2.5">Avaliador Pendente (Cobrança)</th>
+                      <th className="p-2.5">Avaliador</th>
                       <th className="p-2.5">Departamento</th>
                       <th className="p-2.5">Deveria Avaliar</th>
                       <th className="p-2.5 text-center">Status</th>
@@ -1054,38 +1027,18 @@ ORDER BY u_avaliador.nome ASC, u_avaliado.nome ASC;`}</pre>
               >
                 Relatório 5
               </span>
-              <span className="text-[11px] font-semibold text-slate-400">
-                Top Performers & Função Analítica de Janela
-              </span>
             </div>
             <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
               <Award size={20} className="text-[#ff9800]" />
-              <span>Ranking de Desempenho com Função de Janela</span>
+              <span>Ranking de Desempenho</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Recursos:{' '}
-              <span className="bg-amber-100 font-bold text-amber-900 px-1 rounded">
-                RANK() OVER (ORDER BY media DESC)
-              </span>
-              ,{' '}
-              <span className="bg-amber-100 font-bold text-amber-900 px-1 rounded">
-                FETCH FIRST :limite ROWS ONLY
-              </span>
-              ,{' '}
-              <span className="bg-amber-100 font-bold text-amber-900 px-1 rounded">
-                LIKE/ILIKE por departamento
-              </span>
-              , <code className="font-mono text-[#2f2c79]">JOIN</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">GROUP BY</code>,{' '}
-              <code className="font-mono text-[#2f2c79]">HAVING</code>.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs self-start md:self-auto">
             {/* Filtro ILIKE departamento */}
             <input
               type="text"
-              placeholder="Filtrar departamento (ILIKE)..."
+              placeholder="Filtrar departamento..."
               value={departamentoRanking}
               onChange={(e) => setDepartamentoRanking(e.target.value)}
               className="p-1.5 rounded-xl border border-slate-300 text-xs w-44 focus:outline-none focus:ring-1 focus:ring-[#ff9800]"
@@ -1142,7 +1095,9 @@ FETCH FIRST ${limiteRanking} ROWS ONLY;`}</pre>
 
         {/* Gráfico e Tabela R5 */}
         {loadingR5 ? (
-          <div className="text-center py-10 text-xs text-slate-400">Calculando ranking com RANK() OVER...</div>
+          <div className="text-center py-10 text-xs text-slate-400">Carregando ranking...</div>
+        ) : erroRelatorios.r5 ? (
+          <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r5}</div>
         ) : dadosR5.length === 0 ? (
           <div className="text-center py-8 text-xs text-slate-400">
             Nenhum colaborador ranqueado com os filtros especificados.
@@ -1151,9 +1106,6 @@ FETCH FIRST ${limiteRanking} ROWS ONLY;`}</pre>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
             {/* Gráfico de Barras Verticais */}
             <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                Gráfico de Barras Verticais (Pódio dos Mais Bem Avaliados)
-              </h4>
               <div className="flex-1 relative">
                 <Bar data={chartR5Data} options={chartR5Options} />
               </div>
@@ -1176,17 +1128,7 @@ FETCH FIRST ${limiteRanking} ROWS ONLY;`}</pre>
                     const podioIcon =
                       pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `#${pos}`;
 
-                    if (loadingBase) {
-    return (
-      <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center shadow-sm">
-        <div className="text-sm font-semibold text-slate-500">
-          Carregando dados analíticos e consultas SQL...
-        </div>
-      </div>
-    );
-  }
-
-  return (
+                    return (
                       <tr
                         key={item.id_usuario}
                         className={`transition ${

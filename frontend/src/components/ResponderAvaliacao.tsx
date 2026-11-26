@@ -201,9 +201,9 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
         >
           <User size={32} />
         </div>
-        <h3 className="text-xl font-bold text-[#171a4a] mb-2">Nenhum Usuário Selecionado</h3>
+        <h3 className="text-xl font-bold text-[#171a4a] mb-2">Sessão expirada</h3>
         <p className="text-sm text-slate-600 max-w-md mx-auto mb-4">
-          Para responder a uma avaliação 360°, selecione qual colaborador você deseja simular no seletor rápido no topo da página.
+          Entre novamente para responder suas avaliações.
         </p>
       </div>
     );
@@ -218,22 +218,10 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <div>
           <div className="flex items-center space-x-2">
-            <span
-              className="px-2.5 py-0.5 rounded-full text-xs font-bold text-[#000020]"
-              style={{ backgroundColor: '#ffcc50' }}
-            >
-              RF5 • Realização da Avaliação
-            </span>
-            <span className="text-xs text-slate-500 font-semibold">
-              Logado como: <strong className="text-[#171a4a]">{currentUser.nome}</strong>
-            </span>
           </div>
           <h2 className="text-xl font-extrabold text-[#171a4a] mt-1">
             Minhas Avaliações Atribuídas
           </h2>
-          <p className="text-xs text-slate-500">
-            Responda aos questionários 360° para os colegas de equipe para os quais você foi designado neste ciclo.
-          </p>
         </div>
 
         <div className="flex items-center space-x-3 text-xs">
@@ -393,7 +381,7 @@ export const ResponderAvaliacao: React.FC<ResponderAvaliacaoProps> = ({ currentU
         </div>
       )}
 
-      {/* Modal de Preenchimento / Visualização (RF5) */}
+      {/* Modal de Preenchimento / Visualização */}
       {modalAberto && designacaoAtiva && (
         <div className="fixed inset-0 z-50 bg-[#000020]/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col border border-slate-200">

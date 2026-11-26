@@ -79,6 +79,30 @@ Na raiz do projeto:
 ```
 A API estará disponível e respondendo em: `http://localhost:8080`.
 
+### Passo 5: Executar o Front-end
+Com Node.js e npm instalados, mantenha o back-end rodando e abra outro terminal na raiz do projeto:
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+Abra `http://localhost:3000` para acessar as telas (ou o endereço indicado pelo Vite no terminal).
+O frontend encaminha as chamadas `/api` para o back-end na porta `8080`.
+A porta `8080` serve a API; a rota `/` nela não possui uma página inicial.
+
+### Passo 6: Entrar no Sistema
+A tela inicial pede apenas o **email** do colaborador (login simples, sem senha, conforme o enunciado: basta identificar quem responde). A sessão fica salva no navegador até clicar em **Sair**.
+
+Emails de teste (da carga `carga.sql`):
+
+| Email | Colaborador |
+|---|---|
+| `carlos.silva@empresa.com` | Carlos Eduardo Silva — Gerente de Engenharia |
+| `ana.souza@empresa.com` | Ana Paula Souza — Tech Lead |
+| `lucas.ferreira@empresa.com` | Lucas Ferreira — Desenvolvedor Pleno |
+| `gabriel.monteiro@empresa.com` | Gabriel Monteiro — Desenvolvedor Senior |
+| `juliana.rocha@empresa.com` | Juliana Rocha — Desenvolvedora Junior |
+
 ---
 
 ## 📊 4. Cobertura dos Recursos SQL Obrigatórios (Seção 5)
@@ -88,11 +112,11 @@ Todos os recursos SQL exigidos pela disciplina foram distribuídos estrategicame
 | Recurso SQL Exigido | Onde é Utilizado no Sistema |
 |---|---|
 | **Junção Interna (`JOIN`)** | Utilizado em todos os relatórios (ligando `RESPOSTA`, `DESIGNACAO`, `COMPOSICAO`, `QUESTAO`, `AVALIACAO` e `USUARIO`). |
-| **Junção Externa (`LEFT JOIN`)** | **Relatório 4 (Pendências)**: cruza designações com respostas para identificar colaboradores que ainda não responderam (`r.id_resposta IS NULL`). |
+| **Junção Externa (`LEFT JOIN`)** | **Relatório 4 (Pendências)**: cruza designações com respostas; com `GROUP BY` + `HAVING COUNT(r.id_resposta) = 0`, sobram só as designações sem nenhuma resposta (o `COUNT` de coluna ignora os `NULL` gerados pelo `LEFT JOIN`). |
 | **Agregação e Agrupamento (`COUNT`, `AVG`, `SUM`, `GROUP BY`, `HAVING`)** | **Relatório 1, 2, 3, 4 e 5**: cálculo de médias ponderadas via `SUM()`, contagem de avaliadores via `COUNT(DISTINCT)`, médias via `AVG()` e filtros pós-agrupamento via `HAVING`. |
 | **Subconsulta** | **Relatório 2 (Radar de Competências)**: subconsulta correlacionada no `SELECT` calculando a média global de todos os participantes para a mesma questão, permitindo comparativo. |
 | **Ordenação e Ranking (`ORDER BY`, `RANK()`, `FETCH FIRST`)** | **Relatório 5 (Ranking)**: função analítica de janela `RANK() OVER (ORDER BY media DESC)` e limitação com `FETCH FIRST :limite ROWS ONLY`. |
-| **Filtros Diversos (`WHERE` com datas, faixas, `IN`, `LIKE`)** | **Relatório 3**: faixas de datas no `WHERE` (`data_inicio >= ? AND data_fim <= ?`).<br>**Relatório 5**: busca textual com operador `LIKE`/`ILIKE` por departamento (`u.departamento ILIKE ?`). |
+| **Filtros Diversos (`WHERE` com datas, faixas, `IN`, `LIKE`)** | **Relatório 3**: faixas de datas no `WHERE` (`data_inicio >= ? AND data_fim <= ?`).<br>**Relatório 4**: filtro `IN` pelos departamentos do avaliador marcados na tela (`u_avaliador.departamento IN (?, ?, ...)`).<br>**Relatório 5**: busca textual com operador `LIKE`/`ILIKE` por departamento (`u.departamento ILIKE ?`). |
 
 O arquivo com todas as queries comentadas está disponível em: [database/relatorios.sql](database/relatorios.sql).
 
@@ -104,26 +128,32 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 * **Rota:** `GET /api/relatorios/consolidado?idAvaliacao=3&minAvaliadores=2`
 * **Objetivo:** Exibir a média ponderada final de cada colaborador avaliado no ciclo, aplicando o peso das competências (`COMPOSICAO.peso`). Permite filtrar por volume mínimo de avaliadores (`HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores`).
 * **Visualização no Frontend:** Tabela consolidada + Gráfico de Barras Horizontais ordenado da maior para a menor média.
+* **SQL:** [Relatório 1 em `database/relatorios.sql`](database/relatorios.sql#L15).
 
 ### Relatório 2: Radar de Competências com Comparativo Geral da Empresa
 * **Rota:** `GET /api/relatorios/competencias?idAvaliacao=3&idAvaliado=2`
 * **Objetivo:** Comparar o desempenho individual de um colaborador específico em cada questão/competência contra a média geral de todos os colaboradores avaliados na mesma avaliação (obtida via subconsulta).
 * **Visualização no Frontend:** Tabela comparativa + Gráfico tipo **Radar (Teia)** com duas séries de dados: *Média do Avaliado* vs *Média Geral da Empresa*.
+* **SQL:** [Relatório 2 em `database/relatorios.sql`](database/relatorios.sql#L51).
 
 ### Relatório 3: Evolução Histórica entre Ciclos (com Filtro Temporal)
 * **Rota:** `GET /api/relatorios/evolucao?idAvaliado=2&dataInicio=2025-01-01&dataFim=2026-12-31`
 * **Objetivo:** Acompanhar a evolução das médias de um colaborador ao longo de múltiplos ciclos de avaliação semestrais (2025.1 até 2026.2).
 * **Visualização no Frontend:** Tabela cronológica + Gráfico de **Linha Temporal** mostrando a progressão de notas.
+* **SQL:** [Relatório 3 em `database/relatorios.sql`](database/relatorios.sql#L90).
 
 ### Relatório 4: Pendências de Resposta (Quem Ainda Não Avaliou)
-* **Rota:** `GET /api/relatorios/pendencias?idAvaliacao=3`
-* **Objetivo:** Identificar quem são os avaliadores que possuem designações atribuídas mas ainda não preencheram o questionário, permitindo que o RH faça cobranças pontuais.
+* **Rota:** `GET /api/relatorios/pendencias?idAvaliacao=3&departamentos=Tecnologia&departamentos=Produto`
+* **Objetivo:** Identificar quem são os avaliadores que possuem designações atribuídas mas ainda não preencheram o questionário, permitindo que o RH faça cobranças pontuais. Pode ser filtrado por um ou mais departamentos do avaliador (`IN`).
+* **Recursos SQL:** `LEFT JOIN`, `JOIN`, `IN`, `GROUP BY`, `HAVING COUNT(r.id_resposta) = 0`, `ORDER BY`.
 * **Visualização no Frontend:** Tabela de pendências com badge de alerta + Gráfico de **Rosca/Pizza** mostrando proporção de Avaliações Concluídas vs Pendentes.
+* **SQL:** [Relatório 4 em `database/relatorios.sql`](database/relatorios.sql#L125).
 
 ### Relatório 5: Ranking de Desempenho com Função de Janela
 * **Rota:** `GET /api/relatorios/ranking?idAvaliacao=3&departamento=Tecnologia&limite=10`
 * **Objetivo:** Classificar formalmente os profissionais mais bem avaliados (Top Performers) usando a função de janela `RANK() OVER`, com filtro textual flexível por departamento (`ILIKE`) e limite configurável (`FETCH FIRST :limite ROWS ONLY`).
 * **Visualização no Frontend:** Tabela de classificação com pódio + Gráfico de Barras Verticais.
+* **SQL:** [Relatório 5 em `database/relatorios.sql`](database/relatorios.sql#L173).
 
 ---
 
@@ -183,7 +213,7 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 | `GET` | `/api/relatorios/consolidado` | Resultado consolidado e média ponderada (parâmetros: `idAvaliacao`, `minAvaliadores`) |
 | `GET` | `/api/relatorios/competencias` | Radar de competências individual vs média da empresa (parâmetros: `idAvaliacao`, `idAvaliado`) |
 | `GET` | `/api/relatorios/evolucao` | Evolução histórica entre ciclos (parâmetros: `idAvaliado`, `dataInicio`, `dataFim`) |
-| `GET` | `/api/relatorios/pendencias` | Pendências de resposta por avaliação (parâmetros: `idAvaliacao`) |
+| `GET` | `/api/relatorios/pendencias` | Pendências de resposta por avaliação (parâmetros: `idAvaliacao`, `departamentos` opcional e repetível) |
 | `GET` | `/api/relatorios/ranking` | Ranking ordenado via `RANK()` (parâmetros: `idAvaliacao`, `departamento`, `limite`) |
 
 ---

@@ -30,7 +30,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     let message = errorText;
     try {
       const parsed = JSON.parse(errorText);
-      message = parsed.message || parsed.error || errorText;
+      message = parsed.mensagem || parsed.message || parsed.erro || parsed.error || errorText;
     } catch {
       // Keep errorText
     }
@@ -191,8 +191,11 @@ export const api = {
       if (dataFim) search.set('dataFim', dataFim);
       return request<RelatorioEvolucao[]>(`/relatorios/evolucao?${search.toString()}`);
     },
-    pendencias: (idAvaliacao: number) =>
-      request<RelatorioPendencia[]>(`/relatorios/pendencias?idAvaliacao=${idAvaliacao}`),
+    pendencias: (idAvaliacao: number, departamentos: string[] = []) => {
+      const search = new URLSearchParams({ idAvaliacao: idAvaliacao.toString() });
+      departamentos.forEach((dep) => search.append('departamentos', dep));
+      return request<RelatorioPendencia[]>(`/relatorios/pendencias?${search.toString()}`);
+    },
     ranking: (idAvaliacao: number, departamento?: string, limite?: number) => {
       const search = new URLSearchParams({ idAvaliacao: idAvaliacao.toString() });
       if (departamento) search.set('departamento', departamento);
