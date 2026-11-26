@@ -21,7 +21,7 @@ public class RelatorioDAO {
     }
 
     /**
-     * Relatório 1: Resultado consolidado por avaliado (com peso por critério).
+     * Relatório 2: Resultado consolidado por avaliado (com peso por critério).
      * Recursos: JOIN, SUM, AVG, COUNT DISTINCT, GROUP BY, HAVING, ORDER BY.
      */
     public List<Map<String, Object>> consolidadoPorAvaliado(Integer idAvaliacao, Integer minAvaliadores) {
@@ -52,7 +52,7 @@ public class RelatorioDAO {
     }
 
     /**
-     * Relatório 2: Radar de Competências com Comparativo Geral da Empresa.
+     * Relatório 1: Radar de Competências com Comparativo Geral da Empresa.
      * Recursos: JOIN, AVG, COUNT, GROUP BY, Subconsulta correlacionada, ORDER BY.
      */
     public List<Map<String, Object>> desempenhoPorQuestao(Integer idAvaliacao, Integer idAvaliado) {

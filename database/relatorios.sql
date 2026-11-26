@@ -8,40 +8,7 @@
 --   5. Ordenação e ranking (ORDER BY, RANK() e FETCH FIRST)
 --   6. Filtros diversos (WHERE com datas e faixas no R3, IN no R4, ILIKE no R5)
 
--- RELATÓRIO 1: Resultado Consolidado por Avaliado (Média Ponderada 360°)
--- Endpoint: GET /api/relatorios/consolidado?idAvaliacao=1&minAvaliadores=1
--- Objetivo:
---   Consolidar a média ponderada final de cada colaborador avaliado no ciclo,
---   respeitando o peso de cada critério na avaliação (RF6). Filtra avaliados que
---   possuem um volume mínimo de avaliadores para conferir validade estatística.
--- Recursos SQL utilizados:
---   - Junção interna (JOIN de 5 tabelas: RESPOSTA, DESIGNACAO, COMPOSICAO, QUESTAO, USUARIO)
---   - Agregação (SUM para soma ponderada, COUNT DISTINCT de avaliadores)
---   - Agrupamento (GROUP BY nos dados cadastrais do avaliado)
---   - Cláusula HAVING (HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores)
---   - Ordenação (ORDER BY media_ponderada DESC)
-SELECT
-    u.id_usuario,
-    u.nome,
-    u.cargo,
-    u.departamento,
-    ROUND(
-        SUM(CAST(r.valor_resposta AS NUMERIC) * c.peso) / SUM(c.peso), 2
-    ) AS media_ponderada,
-    COUNT(DISTINCT d.id_avaliador) AS total_avaliadores,
-    COUNT(r.id_resposta) AS total_respostas_computadas
-FROM RESPOSTA r
-JOIN DESIGNACAO d ON r.id_designacao = d.id_designacao
-JOIN COMPOSICAO c ON c.id_avaliacao = d.id_avaliacao AND c.id_questao = r.id_questao
-JOIN QUESTAO q ON q.id_questao = r.id_questao
-JOIN USUARIO u ON u.id_usuario = d.id_avaliado
-WHERE d.id_avaliacao = :idAvaliacao
-  AND q.tipo_questao = 'MULTIPLA_ESCOLHA'
-GROUP BY u.id_usuario, u.nome, u.cargo, u.departamento
-HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores
-ORDER BY media_ponderada DESC;
-
--- RELATÓRIO 2: Radar de Competências com Comparativo da Média Geral da Empresa
+-- RELATÓRIO 1: Radar de Competências com Comparativo da Média Geral da Empresa
 -- Endpoint: GET /api/relatorios/competencias?idAvaliacao=1&idAvaliado=2
 -- Objetivo:
 --   Comparar o desempenho de um avaliado específico em cada competência (questão)
@@ -76,6 +43,39 @@ WHERE d.id_avaliacao = :idAvaliacao
   AND q.tipo_questao = 'MULTIPLA_ESCOLHA'
 GROUP BY q.id_questao, q.enunciado, c.peso, d.id_avaliacao
 ORDER BY q.id_questao;
+
+-- RELATÓRIO 2: Resultado Consolidado por Avaliado (Média Ponderada 360°)
+-- Endpoint: GET /api/relatorios/consolidado?idAvaliacao=1&minAvaliadores=1
+-- Objetivo:
+--   Consolidar a média ponderada final de cada colaborador avaliado no ciclo,
+--   respeitando o peso de cada critério na avaliação (RF6). Filtra avaliados que
+--   possuem um volume mínimo de avaliadores para conferir validade estatística.
+-- Recursos SQL utilizados:
+--   - Junção interna (JOIN de 5 tabelas: RESPOSTA, DESIGNACAO, COMPOSICAO, QUESTAO, USUARIO)
+--   - Agregação (SUM para soma ponderada, COUNT DISTINCT de avaliadores)
+--   - Agrupamento (GROUP BY nos dados cadastrais do avaliado)
+--   - Cláusula HAVING (HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores)
+--   - Ordenação (ORDER BY media_ponderada DESC)
+SELECT
+    u.id_usuario,
+    u.nome,
+    u.cargo,
+    u.departamento,
+    ROUND(
+        SUM(CAST(r.valor_resposta AS NUMERIC) * c.peso) / SUM(c.peso), 2
+    ) AS media_ponderada,
+    COUNT(DISTINCT d.id_avaliador) AS total_avaliadores,
+    COUNT(r.id_resposta) AS total_respostas_computadas
+FROM RESPOSTA r
+JOIN DESIGNACAO d ON r.id_designacao = d.id_designacao
+JOIN COMPOSICAO c ON c.id_avaliacao = d.id_avaliacao AND c.id_questao = r.id_questao
+JOIN QUESTAO q ON q.id_questao = r.id_questao
+JOIN USUARIO u ON u.id_usuario = d.id_avaliado
+WHERE d.id_avaliacao = :idAvaliacao
+  AND q.tipo_questao = 'MULTIPLA_ESCOLHA'
+GROUP BY u.id_usuario, u.nome, u.cargo, u.departamento
+HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores
+ORDER BY media_ponderada DESC;
 
 -- RELATÓRIO 3: Evolução Histórica entre Ciclos por Avaliado (com Filtro Temporal)
 -- Endpoint: GET /api/relatorios/evolucao?idAvaliado=2&dataInicio=2025-01-01&dataFim=2026-12-31

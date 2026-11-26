@@ -8,7 +8,7 @@ Trabalho prático da disciplina de **Banco de Dados I**
 
 ## Integrantes do Grupo
 * **Lorenzo Davanço:** `2025012280364`
-* **Thierry Garcia:** `<!-- Preencher Nome Completo e RA -->`
+* **Thierry Garcia:** `202501220239`
 
 ---
 
@@ -114,7 +114,7 @@ Onde cada recurso SQL exigido aparece nos relatórios:
 | **Junção Interna (`JOIN`)** | Utilizado em todos os relatórios (ligando `RESPOSTA`, `DESIGNACAO`, `COMPOSICAO`, `QUESTAO`, `AVALIACAO` e `USUARIO`). |
 | **Junção Externa (`LEFT JOIN`)** | **Relatório 4 (Pendências)**: cruza designações com respostas; com `GROUP BY` + `HAVING COUNT(r.id_resposta) = 0`, sobram só as designações sem nenhuma resposta (o `COUNT` de coluna ignora os `NULL` gerados pelo `LEFT JOIN`). |
 | **Agregação e Agrupamento (`COUNT`, `AVG`, `SUM`, `GROUP BY`, `HAVING`)** | **Relatório 1, 2, 3, 4 e 5**: cálculo de médias ponderadas via `SUM()`, contagem de avaliadores via `COUNT(DISTINCT)`, médias via `AVG()` e filtros pós-agrupamento via `HAVING`. |
-| **Subconsulta** | **Relatório 2 (Radar de Competências)**: subconsulta correlacionada no `SELECT` calculando a média global de todos os participantes para a mesma questão, permitindo comparativo. |
+| **Subconsulta** | **Relatório 1 (Radar de Competências)**: subconsulta correlacionada no `SELECT` calculando a média global de todos os participantes para a mesma questão, permitindo comparativo. |
 | **Ordenação e Ranking (`ORDER BY`, `RANK()`, `FETCH FIRST`)** | **Relatório 5 (Ranking)**: função analítica de janela `RANK() OVER (ORDER BY media DESC)` e limitação com `FETCH FIRST :limite ROWS ONLY`. |
 | **Filtros Diversos (`WHERE` com datas, faixas, `IN`, `LIKE`)** | **Relatório 3**: faixas de datas no `WHERE` (`data_inicio >= ? AND data_fim <= ?`).<br>**Relatório 4**: filtro `IN` pelos departamentos do avaliador marcados na tela (`u_avaliador.departamento IN (?, ?, ...)`).<br>**Relatório 5**: busca textual com operador `LIKE`/`ILIKE` por departamento (`u.departamento ILIKE ?`). |
 
@@ -124,36 +124,36 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 
 ## 5. Detalhamento dos 5 Relatórios (RF7)
 
-### Relatório 1: Resultado Consolidado por Avaliado
-* **Rota:** `GET /api/relatorios/consolidado?idAvaliacao=3&minAvaliadores=2`
-* **Objetivo:** Exibir a média ponderada final de cada colaborador avaliado no ciclo, aplicando o peso das competências (`COMPOSICAO.peso`). Permite filtrar por volume mínimo de avaliadores (`HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores`).
-* **Visualização no Frontend:** Tabela consolidada + Gráfico de Barras Horizontais ordenado da maior para a menor média.
-* **SQL:** [Relatório 1 em `database/relatorios.sql`](database/relatorios.sql#L15).
-
-### Relatório 2: Radar de Competências com Comparativo Geral da Empresa
+### Relatório 1: Radar de Competências com Comparativo Geral da Empresa
 * **Rota:** `GET /api/relatorios/competencias?idAvaliacao=3&idAvaliado=2`
 * **Objetivo:** Comparar o desempenho individual de um colaborador específico em cada questão/competência contra a média geral de todos os colaboradores avaliados na mesma avaliação (obtida via subconsulta).
 * **Visualização no Frontend:** Tabela comparativa + Gráfico tipo **Radar (Teia)** com duas séries de dados: *Média do Avaliado* vs *Média Geral da Empresa*.
-* **SQL:** [Relatório 2 em `database/relatorios.sql`](database/relatorios.sql#L51).
+* **SQL:** [Relatório 1 em `database/relatorios.sql`](database/relatorios.sql#L11).
+
+### Relatório 2: Resultado Consolidado por Avaliado
+* **Rota:** `GET /api/relatorios/consolidado?idAvaliacao=3&minAvaliadores=2`
+* **Objetivo:** Exibir a média ponderada final de cada colaborador avaliado no ciclo, aplicando o peso das competências (`COMPOSICAO.peso`). Permite filtrar por volume mínimo de avaliadores (`HAVING COUNT(DISTINCT d.id_avaliador) >= :minAvaliadores`).
+* **Visualização no Frontend:** Tabela consolidada + Gráfico de Barras Horizontais ordenado da maior para a menor média.
+* **SQL:** [Relatório 2 em `database/relatorios.sql`](database/relatorios.sql#L47).
 
 ### Relatório 3: Evolução Histórica entre Ciclos (com Filtro Temporal)
 * **Rota:** `GET /api/relatorios/evolucao?idAvaliado=2&dataInicio=2025-01-01&dataFim=2026-12-31`
 * **Objetivo:** Acompanhar a evolução das médias de um colaborador ao longo de múltiplos ciclos de avaliação semestrais (2025.1 até 2026.2).
 * **Visualização no Frontend:** Tabela cronológica + Gráfico de **Linha Temporal** mostrando a progressão de notas.
-* **SQL:** [Relatório 3 em `database/relatorios.sql`](database/relatorios.sql#L90).
+* **SQL:** [Relatório 3 em `database/relatorios.sql`](database/relatorios.sql#L80).
 
 ### Relatório 4: Pendências de Resposta (Quem Ainda Não Avaliou)
 * **Rota:** `GET /api/relatorios/pendencias?idAvaliacao=3&departamentos=Tecnologia&departamentos=Produto`
 * **Objetivo:** Identificar quem são os avaliadores que possuem designações atribuídas mas ainda não preencheram o questionário, permitindo que o RH faça cobranças pontuais. Pode ser filtrado por um ou mais departamentos do avaliador (`IN`).
 * **Recursos SQL:** `LEFT JOIN`, `JOIN`, `IN`, `GROUP BY`, `HAVING COUNT(r.id_resposta) = 0`, `ORDER BY`.
 * **Visualização no Frontend:** Tabela de pendências com badge de alerta + Gráfico de **Rosca/Pizza** mostrando proporção de Avaliações Concluídas vs Pendentes.
-* **SQL:** [Relatório 4 em `database/relatorios.sql`](database/relatorios.sql#L125).
+* **SQL:** [Relatório 4 em `database/relatorios.sql`](database/relatorios.sql#L112).
 
 ### Relatório 5: Ranking de Desempenho com Função de Janela
 * **Rota:** `GET /api/relatorios/ranking?idAvaliacao=3&departamento=Tecnologia&limite=10`
 * **Objetivo:** Classificar os colaboradores mais bem avaliados usando a função de janela `RANK() OVER`, com filtro de texto por departamento (`ILIKE`) e limite configurável (`FETCH FIRST :limite ROWS ONLY`).
 * **Visualização no Frontend:** Tabela de classificação com pódio + Gráfico de Barras Verticais.
-* **SQL:** [Relatório 5 em `database/relatorios.sql`](database/relatorios.sql#L173).
+* **SQL:** [Relatório 5 em `database/relatorios.sql`](database/relatorios.sql#L157).
 
 ---
 
@@ -210,8 +210,8 @@ O arquivo com todas as queries comentadas está disponível em: [database/relato
 ### RF7: Relatórios Analíticos
 | Método | Endpoint | Descrição |
 |---|---|---|
-| `GET` | `/api/relatorios/consolidado` | Resultado consolidado e média ponderada (parâmetros: `idAvaliacao`, `minAvaliadores`) |
 | `GET` | `/api/relatorios/competencias` | Radar de competências individual vs média da empresa (parâmetros: `idAvaliacao`, `idAvaliado`) |
+| `GET` | `/api/relatorios/consolidado` | Resultado consolidado e média ponderada (parâmetros: `idAvaliacao`, `minAvaliadores`) |
 | `GET` | `/api/relatorios/evolucao` | Evolução histórica entre ciclos (parâmetros: `idAvaliado`, `dataInicio`, `dataFim`) |
 | `GET` | `/api/relatorios/pendencias` | Pendências de resposta por avaliação (parâmetros: `idAvaliacao`, `departamentos` opcional e repetível) |
 | `GET` | `/api/relatorios/ranking` | Ranking ordenado via `RANK()` (parâmetros: `idAvaliacao`, `departamento`, `limite`) |

@@ -409,16 +409,16 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
       <div className="sticky top-28 z-40 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-md flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <button
-            onClick={() => scrollToSection('relatorio-1')}
-            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#2f2c79] hover:text-white transition font-medium cursor-pointer"
-          >
-            #1 Consolidado
-          </button>
-          <button
             onClick={() => scrollToSection('relatorio-2')}
             className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#2f2c79] hover:text-white transition font-medium cursor-pointer"
           >
-            #2 Radar
+            #1 Radar
+          </button>
+          <button
+            onClick={() => scrollToSection('relatorio-1')}
+            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#2f2c79] hover:text-white transition font-medium cursor-pointer"
+          >
+            #2 Consolidado
           </button>
           <button
             onClick={() => scrollToSection('relatorio-3')}
@@ -485,119 +485,6 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
       </div>
 
       <section
-        id="relatorio-1"
-        className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div>
-            <div className="flex items-center space-x-2 mb-1">
-              <span
-                className="px-2 py-0.5 rounded-full text-[10px] font-bold text-[#000020]"
-                style={{ backgroundColor: '#ffcc50' }}
-              >
-                Relatório 1
-              </span>
-            </div>
-            <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
-              <BarChart3 size={20} className="text-[#2f2c79]" />
-              <span>Resultado Consolidado por Avaliado</span>
-            </h3>
-          </div>
-
-          <div className="flex items-center space-x-3 text-xs self-start md:self-auto">
-            <div className="flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-              <Filter size={13} className="text-slate-400" />
-              <span>Mín. Avaliadores:</span>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={minAvaliadores}
-                onChange={(e) => setMinAvaliadores(parseInt(e.target.value) || 1)}
-                className="w-12 text-center p-1 rounded border border-slate-300 font-bold text-[#171a4a]"
-              />
-            </div>
-
-            <button
-              onClick={() => toggleSql('r1')}
-              className="flex items-center space-x-1 px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
-            >
-              <Code2 size={14} />
-              <span>SQL</span>
-              {showSql['r1'] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-          </div>
-        </div>
-
-        {showSql['r1'] && (
-          <div className="bg-[#000020] text-amber-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
-            <pre>{`SELECT u.id_usuario, u.nome, u.cargo, u.departamento,
-  ROUND(SUM(CAST(r.valor_resposta AS NUMERIC) * c.peso) / SUM(c.peso), 2) AS media_ponderada,
-  COUNT(DISTINCT d.id_avaliador) AS total_avaliadores,
-  COUNT(r.id_resposta) AS total_respostas_computadas
-FROM RESPOSTA r
-JOIN DESIGNACAO d ON r.id_designacao = d.id_designacao
-JOIN COMPOSICAO c ON c.id_avaliacao = d.id_avaliacao AND c.id_questao = r.id_questao
-JOIN QUESTAO q ON q.id_questao = r.id_questao
-JOIN USUARIO u ON u.id_usuario = d.id_avaliado
-WHERE d.id_avaliacao = ${avaliacaoId} AND q.tipo_questao = 'MULTIPLA_ESCOLHA'
-GROUP BY u.id_usuario, u.nome, u.cargo, u.departamento
-HAVING COUNT(DISTINCT d.id_avaliador) >= ${minAvaliadores}
-ORDER BY media_ponderada DESC;`}</pre>
-          </div>
-        )}
-
-        {loadingR1 ? (
-          <div className="text-center py-10 text-xs text-slate-400">Carregando consolidado...</div>
-        ) : erroRelatorios.r1 ? (
-          <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r1}</div>
-        ) : dadosR1.length === 0 ? (
-          <div className="text-center py-8 text-xs text-slate-400">
-            Nenhuma resposta computada para este ciclo com o corte mínimo de {minAvaliadores} avaliadores.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-            <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
-              <div className="flex-1 relative">
-                <Bar data={chartR1Data} options={chartR1Options} />
-              </div>
-            </div>
-
-            <div className="overflow-x-auto max-h-72 overflow-y-auto border border-slate-200 rounded-xl">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">
-                  <tr>
-                    <th className="p-2.5">Colaborador</th>
-                    <th className="p-2.5">Departamento</th>
-                    <th className="p-2.5 text-center">Avaliadores</th>
-                    <th className="p-2.5 text-right">Média AvaliaMAX</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {dadosR1.map((item, idx) => (
-                    <tr key={item.id_usuario} className="hover:bg-slate-50 transition">
-                      <td className="p-2.5 font-semibold text-[#171a4a]">
-                        <span className="text-slate-400 mr-1.5 font-mono">#{idx + 1}</span>
-                        {item.nome}
-                        <div className="text-[10px] text-slate-400 font-normal">{item.cargo}</div>
-                      </td>
-                      <td className="p-2.5 text-slate-600">{item.departamento}</td>
-                      <td className="p-2.5 text-center font-semibold text-[#2f2c79]">
-                        {item.total_avaliadores}
-                      </td>
-                      <td className="p-2.5 text-right font-black text-sm text-[#ff9800]">
-                        {Number(item.media_ponderada).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <section
         id="relatorio-2"
         className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
       >
@@ -608,7 +495,7 @@ ORDER BY media_ponderada DESC;`}</pre>
                 className="px-2 py-0.5 rounded-full text-[10px] font-bold text-[#000020]"
                 style={{ backgroundColor: '#ffcc50' }}
               >
-                Relatório 2
+                Relatório 1
               </span>
             </div>
             <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
@@ -709,6 +596,119 @@ ORDER BY q.id_questao;`}</pre>
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section
+        id="relatorio-1"
+        className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5 scroll-mt-48"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <div className="flex items-center space-x-2 mb-1">
+              <span
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold text-[#000020]"
+                style={{ backgroundColor: '#ffcc50' }}
+              >
+                Relatório 2
+              </span>
+            </div>
+            <h3 className="text-lg font-extrabold text-[#171a4a] flex items-center space-x-2">
+              <BarChart3 size={20} className="text-[#2f2c79]" />
+              <span>Resultado Consolidado por Avaliado</span>
+            </h3>
+          </div>
+
+          <div className="flex items-center space-x-3 text-xs self-start md:self-auto">
+            <div className="flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+              <Filter size={13} className="text-slate-400" />
+              <span>Mín. Avaliadores:</span>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={minAvaliadores}
+                onChange={(e) => setMinAvaliadores(parseInt(e.target.value) || 1)}
+                className="w-12 text-center p-1 rounded border border-slate-300 font-bold text-[#171a4a]"
+              />
+            </div>
+
+            <button
+              onClick={() => toggleSql('r1')}
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-xl text-slate-600 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
+            >
+              <Code2 size={14} />
+              <span>SQL</span>
+              {showSql['r1'] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+          </div>
+        </div>
+
+        {showSql['r1'] && (
+          <div className="bg-[#000020] text-amber-200 p-4 rounded-xl text-xs font-mono overflow-x-auto">
+            <pre>{`SELECT u.id_usuario, u.nome, u.cargo, u.departamento,
+  ROUND(SUM(CAST(r.valor_resposta AS NUMERIC) * c.peso) / SUM(c.peso), 2) AS media_ponderada,
+  COUNT(DISTINCT d.id_avaliador) AS total_avaliadores,
+  COUNT(r.id_resposta) AS total_respostas_computadas
+FROM RESPOSTA r
+JOIN DESIGNACAO d ON r.id_designacao = d.id_designacao
+JOIN COMPOSICAO c ON c.id_avaliacao = d.id_avaliacao AND c.id_questao = r.id_questao
+JOIN QUESTAO q ON q.id_questao = r.id_questao
+JOIN USUARIO u ON u.id_usuario = d.id_avaliado
+WHERE d.id_avaliacao = ${avaliacaoId} AND q.tipo_questao = 'MULTIPLA_ESCOLHA'
+GROUP BY u.id_usuario, u.nome, u.cargo, u.departamento
+HAVING COUNT(DISTINCT d.id_avaliador) >= ${minAvaliadores}
+ORDER BY media_ponderada DESC;`}</pre>
+          </div>
+        )}
+
+        {loadingR1 ? (
+          <div className="text-center py-10 text-xs text-slate-400">Carregando consolidado...</div>
+        ) : erroRelatorios.r1 ? (
+          <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r1}</div>
+        ) : dadosR1.length === 0 ? (
+          <div className="text-center py-8 text-xs text-slate-400">
+            Nenhuma resposta computada para este ciclo com o corte mínimo de {minAvaliadores} avaliadores.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+            <div className="h-72 bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
+              <div className="flex-1 relative">
+                <Bar data={chartR1Data} options={chartR1Options} />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto max-h-72 overflow-y-auto border border-slate-200 rounded-xl">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#171a4a] text-white sticky top-0 font-bold">
+                  <tr>
+                    <th className="p-2.5">Colaborador</th>
+                    <th className="p-2.5">Departamento</th>
+                    <th className="p-2.5 text-center">Avaliadores</th>
+                    <th className="p-2.5 text-right">Média AvaliaMAX</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {dadosR1.map((item, idx) => (
+                    <tr key={item.id_usuario} className="hover:bg-slate-50 transition">
+                      <td className="p-2.5 font-semibold text-[#171a4a]">
+                        <span className="text-slate-400 mr-1.5 font-mono">#{idx + 1}</span>
+                        {item.nome}
+                        <div className="text-[10px] text-slate-400 font-normal">{item.cargo}</div>
+                      </td>
+                      <td className="p-2.5 text-slate-600">{item.departamento}</td>
+                      <td className="p-2.5 text-center font-semibold text-[#2f2c79]">
+                        {item.total_avaliadores}
+                      </td>
+                      <td className="p-2.5 text-right font-black text-sm text-[#ff9800]">
+                        {Number(item.media_ponderada).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

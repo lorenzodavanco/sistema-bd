@@ -24,7 +24,7 @@ public class RelatorioController {
     }
 
     /**
-     * Relatório 1: Resultado consolidado por avaliado.
+     * Relatório 2: Resultado consolidado por avaliado.
      * GET /api/relatorios/consolidado?idAvaliacao=1&minAvaliadores=1
      */
     @GetMapping("/consolidado")
@@ -35,7 +35,7 @@ public class RelatorioController {
     }
 
     /**
-     * Relatório 2: Radar de competências com comparativo geral.
+     * Relatório 1: Radar de competências com comparativo geral.
      * GET /api/relatorios/competencias?idAvaliacao=1&idAvaliado=2
      */
     @GetMapping("/competencias")
