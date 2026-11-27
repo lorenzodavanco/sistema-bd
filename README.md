@@ -7,7 +7,7 @@ Trabalho prático da disciplina de **Banco de Dados I**
 ---
 
 ## Integrantes do Grupo
-* **Lorenzo Davanço:** `2025012280364`
+* **Lorenzo Davanço:** `202501220364`
 * **Thierry Garcia:** `202501220239`
 
 ---
