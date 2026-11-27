@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -57,6 +57,31 @@ interface RelatoriosHubProps {
   currentUser: Usuario | null;
 }
 
+const COMPETENCIAS: Record<number, string> = {
+  1: 'Clareza',
+  2: 'Colaboração',
+  3: 'Pontualidade',
+  4: 'Qualidade técnica',
+  5: 'Resolução de problemas',
+  6: 'Proatividade',
+  7: 'Receptividade',
+  8: 'Adaptabilidade',
+  9: 'Organização',
+  10: 'Ética',
+  11: 'Liderança',
+  12: 'Autonomia',
+  13: 'Foco no cliente',
+  14: 'Aprendizado',
+  15: 'Negociação',
+  16: 'Eficiência',
+  17: 'Mentoria',
+  18: 'Cultura',
+};
+
+// questões cadastradas depois ficam com o enunciado resumido
+const nomeCompetencia = (idQuestao: number, enunciado: string) =>
+  COMPETENCIAS[idQuestao] ?? (enunciado.length > 25 ? enunciado.substring(0, 25) + '...' : enunciado);
+
 export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => {
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -81,6 +106,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
 
   const [loadingR1, setLoadingR1] = useState(false);
   const [loadingR2, setLoadingR2] = useState(false);
+  const ultimaRequisicaoR2 = useRef(0);
   const [loadingR3, setLoadingR3] = useState(false);
   const [loadingR4, setLoadingR4] = useState(false);
   const [loadingR5, setLoadingR5] = useState(false);
@@ -153,16 +179,21 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   };
 
   const carregarR2 = async (idAv: number, idUsr: number) => {
+    // ignora respostas de um colaborador selecionado antes (troca rápida no filtro)
+    const requisicao = ++ultimaRequisicaoR2.current;
     setLoadingR2(true);
     try {
       const res = await api.relatorios.competencias(idAv, idUsr);
+      if (requisicao !== ultimaRequisicaoR2.current) return;
       setDadosR2(res);
       setErroRelatorios((prev) => ({ ...prev, r2: '' }));
     } catch (e) {
+      if (requisicao !== ultimaRequisicaoR2.current) return;
       console.error(e);
+      setDadosR2([]);
       setErroRelatorios((prev) => ({ ...prev, r2: 'Não foi possível carregar o radar. Verifique a conexão com a API.' }));
     } finally {
-      setLoadingR2(false);
+      if (requisicao === ultimaRequisicaoR2.current) setLoadingR2(false);
     }
   };
 
@@ -273,9 +304,7 @@ export const RelatoriosHub: React.FC<RelatoriosHubProps> = ({ currentUser }) => 
   };
 
   const chartR2Data = {
-    labels: dadosR2.map((d) =>
-      d.competencia.length > 25 ? d.competencia.substring(0, 25) + '...' : d.competencia
-    ),
+    labels: dadosR2.map((d) => nomeCompetencia(d.id_questao, d.competencia)),
     datasets: [
       {
         label: 'Média do Avaliado',
@@ -538,7 +567,7 @@ ORDER BY q.id_questao;`}</pre>
           </div>
         )}
 
-        {loadingR2 ? (
+        {loadingR2 && dadosR2.length === 0 ? (
           <div className="text-center py-10 text-xs text-slate-400">Carregando radar...</div>
         ) : erroRelatorios.r2 ? (
           <div role="alert" className="text-center py-8 text-sm text-rose-700 bg-rose-50 rounded-xl">{erroRelatorios.r2}</div>
@@ -571,8 +600,8 @@ ORDER BY q.id_questao;`}</pre>
 
                     return (
                       <tr key={item.id_questao} className="hover:bg-slate-50 transition">
-                        <td className="p-2.5 font-semibold text-[#171a4a]">
-                          {item.competencia}
+                        <td className="p-2.5 font-semibold text-[#171a4a]" title={item.competencia}>
+                          {nomeCompetencia(item.id_questao, item.competencia)}
                         </td>
                         <td className="p-2.5 text-center font-mono text-slate-500">
                           {Number(item.peso).toFixed(1)}
